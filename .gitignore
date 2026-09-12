@@ -1,0 +1,15 @@
+# macOS
+.DS_Store
+
+# Arquivos enviados pelos usuários
+uploads/anuncios/*
+
+# Contratos gerados
+contratos/gerados/*
+
+# Arquivos temporários
+*.log
+*.tmp
+
+# Dependências futuras
+/vendor/
