@@ -159,3 +159,12 @@ CREATE TABLE contrato_gerado (
     CONSTRAINT pk_contrato_gerado PRIMARY KEY (id_contrato_gerado),
     CONSTRAINT fk_contrato_gerado_configuracao FOREIGN KEY (id_configuracao) REFERENCES configuracao_contrato(id_configuracao) ON DELETE CASCADE
 );
+
+INSERT INTO tipo_anuncio (nome, ativo)
+VALUES
+    ('CASA', TRUE),
+    ('APARTAMENTO', TRUE),
+    ('KITNET', TRUE),
+    ('QUARTO', TRUE),
+    ('REPUBLICA', TRUE),
+    ('OUTRO', TRUE);

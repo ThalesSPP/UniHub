@@ -24,7 +24,7 @@
                     </li>
 
                     <li class="nav-item ms-lg-2">
-                        <a class="btn btn-primary" href="#"> Anunciar imóvel</a>
+                        <a class="btn btn-primary" href="/UniHub/pages/anuncios/novo-anuncio.php"> Anunciar imóvel</a>
                     </li>
 
                     <li class="nav-link">
