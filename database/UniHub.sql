@@ -16,6 +16,12 @@ CREATE TABLE usuario (
     id_perfil INT UNSIGNED NOT NULL,
 
     nome VARCHAR(100) NOT NULL,
+    cpf CHAR(11) NULL,
+    rg VARCHAR(20) NULL,
+    nacionalidade VARCHAR(50) NULL,
+    estado_civil VARCHAR(30) NULL,
+    profissao VARCHAR(100) NULL,
+
     email VARCHAR(255) NOT NULL,
     senha VARCHAR(255) NOT NULL,
     telefone VARCHAR(20) NOT NULL,
@@ -27,6 +33,7 @@ CREATE TABLE usuario (
 
     CONSTRAINT pk_usuario PRIMARY KEY (id_usuario),
     CONSTRAINT uq_usuario_email UNIQUE (email),
+    CONSTRAINT uq_usuario_cpf UNIQUE (cpf),
     CONSTRAINT fk_usuario_perfil FOREIGN KEY (id_perfil) REFERENCES perfil(id_perfil)
 );
 
