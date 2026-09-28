@@ -119,13 +119,13 @@
 
                             <div class="col-md-5">
                                 <label for="cidade" class="form-label">Cidade</label>
-                                <input type="text" class="form-control" id="cidade" name="cidade" value="<?= htmlspecialchars($dados['cidade'] ?? 'Alegre') ?>" required>
+                                <input type="text" class="form-control" id="cidade" name="cidade" placeholder="Ex.: Alegre" value="<?= htmlspecialchars($dados['cidade'] ?? '') ?>" required>
                             </div>
 
                             <div class="col-md-3">
 
                                 <label for="estado" class="form-label">Estado</label>
-                                <input type="text" class="form-control" id="estado" name="estado" maxlength="2" value="<?= htmlspecialchars($dados['estado'] ?? 'ES') ?>" required>
+                                <input type="text" class="form-control" id="estado" name="estado" placeholder="Ex.: ES" maxlength="2" value="<?= htmlspecialchars($dados['estado'] ?? '') ?>" required>
                             </div>
 
                             <div class="col-md-4">

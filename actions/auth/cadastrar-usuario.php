@@ -15,6 +15,12 @@
     require_once __DIR__ . '/../../config/database.php';
 
     $nome = trim($_POST['nome'] ?? '');
+    $cpfInformado = trim($_POST['cpf'] ?? '');
+    $cpf = preg_replace('/\D/', '', $cpfInformado);
+    $rg = trim($_POST['rg'] ?? '');
+    $nacionalidade = trim($_POST['nacionalidade'] ?? '');
+    $estadoCivil = trim($_POST['estado_civil'] ?? '');
+    $profissao = trim($_POST['profissao'] ?? '');
     $email = trim($_POST['email'] ?? '');
     $telefone = trim($_POST['telefone'] ?? '');
 
@@ -23,12 +29,24 @@
 
     $_SESSION['dados_cadastro'] = [
         'nome' => $nome,
+        'cpf' => $cpfInformado,
+        'rg' => $rg,
+        'nacionalidade' => $nacionalidade,
+        'estado_civil' => $estadoCivil,
+        'profissao' => $profissao,
         'email' => $email,
         'telefone' => $telefone
     ];
 
-    if($nome === '' || $email === '' || $telefone === '' || $senha === '' ||  $confirmarSenha === ''){
+    if( $nome === '' || $cpf === '' || $rg === '' || $nacionalidade === '' || $estadoCivil === '' || $profissao === '' || $email === '' || $telefone === '' || $senha === '' || $confirmarSenha === ''){
         $_SESSION['erro'] = 'Preencha todos os campos.';
+
+        header('Location: /UniHub/pages/auth/cadastro.php');
+        exit;
+    }
+
+    if(strlen($cpf) !== 11){
+        $_SESSION['erro'] = 'Informe um CPF válido com 11 números.';
 
         header('Location: /UniHub/pages/auth/cadastro.php');
         exit;
@@ -36,6 +54,34 @@
 
     if(!filter_var($email, FILTER_VALIDATE_EMAIL)){
         $_SESSION['erro'] = 'Informe um endereço de e-mail válido.';
+
+        header('Location: /UniHub/pages/auth/cadastro.php');
+        exit;
+    }
+
+    if(strlen($senha) < 8){
+        $_SESSION['erro'] = 'A senha deve possuir no mínimo 8 caracteres.';
+
+        header('Location: /UniHub/pages/auth/cadastro.php');
+        exit;
+    }
+
+    if(!preg_match('/[A-Z]/', $senha)){
+        $_SESSION['erro'] = 'A senha deve possuir pelo menos uma letra maiúscula.';
+
+        header('Location: /UniHub/pages/auth/cadastro.php');
+        exit;
+    }
+
+    if(!preg_match('/[0-9]/', $senha)){
+        $_SESSION['erro'] = 'A senha deve possuir pelo menos um número.';
+
+        header('Location: /UniHub/pages/auth/cadastro.php');
+        exit;
+    }
+
+    if(!preg_match('/[^A-Za-z0-9]/', $senha)){
+        $_SESSION['erro'] = 'A senha deve possuir pelo menos um caractere especial.';
 
         header('Location: /UniHub/pages/auth/cadastro.php');
         exit;
@@ -69,6 +115,26 @@
     }
 
     $sql = "
+        SELECT id_usuario
+        FROM usuario
+        WHERE cpf = ?
+        LIMIT 1
+    ";
+
+    $stmt = $pdo->prepare($sql);
+    $stmt->execute([
+        $cpf
+    ]);
+
+    if($stmt->fetch()){
+        $_SESSION['erro'] =
+            'Já existe uma conta cadastrada com este CPF.';
+
+        header('Location: /UniHub/pages/auth/cadastro.php');
+        exit;
+    }
+
+    $sql = "
         SELECT id_perfil
         FROM perfil
         WHERE nome = 'ANUNCIANTE'
@@ -79,7 +145,6 @@
     $stmt = $pdo->prepare($sql);
     $stmt->execute();
     $perfil = $stmt->fetch();
-
 
     if(!$perfil){
         $_SESSION['erro'] =
@@ -98,12 +163,22 @@
         INSERT INTO usuario (
             id_perfil,
             nome,
+            cpf,
+            rg,
+            nacionalidade,
+            estado_civil,
+            profissao,
             email,
             senha,
             telefone,
             ativo
         )
         VALUES (
+            ?,
+            ?,
+            ?,
+            ?,
+            ?,
             ?,
             ?,
             ?,
@@ -117,6 +192,11 @@
     $stmt->execute([
         $perfil['id_perfil'],
         $nome,
+        $cpf,
+        $rg,
+        $nacionalidade,
+        $estadoCivil,
+        $profissao,
         $email,
         $senhaHash,
         $telefone

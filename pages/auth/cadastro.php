@@ -17,7 +17,7 @@
 
 <section class="container py-5">
     <div class="row justify-content-center">
-        <div class="col-12 col-md-9 col-lg-6">
+        <div class="col-12 col-md-10 col-lg-8">
             <div class="card auth-card">
                 <div class="card-body p-4 p-md-5">
                     <div class="text-center mb-4">
@@ -45,6 +45,57 @@
 
                             <input type="text" class="form-control" id="nome" name="nome" placeholder="Digite seu nome completo" value="<?= htmlspecialchars($dadosCadastro['nome'] ?? '') ?>" required>
                         </div>
+                        
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-6">
+                                <label for="cpf" class="form-label">
+                                    CPF
+                                </label>
+
+                                <input type="text" class="form-control" id="cpf" name="cpf" placeholder="000.000.000-00" maxlength="14" value="<?= htmlspecialchars($dadosCadastro['cpf'] ?? '') ?>" required>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label for="rg" class="form-label">
+                                    RG
+                                </label>
+
+                                <input type="text" class="form-control" id="rg" name="rg" placeholder="Digite seu RG" maxlength="20" value="<?= htmlspecialchars($dadosCadastro['rg'] ?? '') ?>" required>
+                            </div>
+                        </div>
+
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-4">
+                                <label for="nacionalidade" class="form-label">
+                                    Nacionalidade
+                                </label>
+
+                                <input type="text" class="form-control" id="nacionalidade" name="nacionalidade" placeholder="Ex.: Brasileiro" maxlength="50" value="<?= htmlspecialchars($dadosCadastro['nacionalidade'] ?? '') ?>" required>
+                            </div>
+
+                            <div class="col-md-4">
+                                <label for="estado_civil" class="form-label">
+                                    Estado civil
+                                </label>
+
+                                <select class="form-select" id="estado_civil" name="estado_civil" required>
+                                    <option value="">Selecione</option>
+                                    <option value="Solteiro(a)" <?= ($dadosCadastro['estado_civil'] ?? '') === 'Solteiro(a)' ? 'selected' : '' ?>>Solteiro(a)</option>
+                                    <option value="Casado(a)" <?= ($dadosCadastro['estado_civil'] ?? '') === 'Casado(a)' ? 'selected' : '' ?>>Casado(a)</option>
+                                    <option value="Divorciado(a)" <?= ($dadosCadastro['estado_civil'] ?? '') === 'Divorciado(a)' ? 'selected' : '' ?>>Divorciado(a)</option>
+                                    <option value="Viúvo(a)" <?= ($dadosCadastro['estado_civil'] ?? '') === 'Viúvo(a)' ? 'selected' : '' ?>>Viúvo(a)</option>
+                                    <option value="União estável" <?= ($dadosCadastro['estado_civil'] ?? '') === 'União estável' ? 'selected' : '' ?>>União estável</option>
+                                </select>
+                            </div>
+
+                            <div class="col-md-4">
+                                <label for="profissao" class="form-label">
+                                    Profissão
+                                </label>
+
+                                <input type="text" class="form-control" id="profissao" name="profissao" placeholder="Digite sua profissão" maxlength="100" value="<?= htmlspecialchars($dadosCadastro['profissao'] ?? '') ?>" required>
+                            </div>
+                        </div>
 
                         <div class="mb-3">
                             <label for="email" class="form-label">
@@ -65,18 +116,21 @@
                         <div class="mb-3">
                             <label for="senha" class="form-label">
                                 Senha
+
+                                <div class="form-text">
+                                    A senha deve possuir no mínimo 8 caracteres, uma letra maiúscula, um número e um caractere especial.
+                                </div>
                             </label>
 
-                            <input type="password" class="form-control" id="senha" name="senha" placeholder="Digite sua senha" required autocomplete="new-password">
+                            <input type="password" class="form-control" id="senha" name="senha" placeholder="Digite sua senha" minlength="8" pattern="(?=.*[A-Z])(?=.*[0-9])(?=.*[^A-Za-z0-9]).{8,}" title="A senha deve possuir no mínimo 8 caracteres, um número e um caractere especial." required autocomplete="new-password">
                         </div>
 
                         <div class="mb-3">
-
                             <label for="confirmar_senha" class="form-label">
                                 Confirmar senha
                             </label>
 
-                            <input type="password" class="form-control" id="confirmar_senha" name="confirmar_senha" placeholder="Digite sua senha novamente" required autocomplete="new-password">
+                            <input type="password" class="form-control" id="confirmar_senha" name="confirmar_senha" placeholder="Digite sua senha novamente" minlength="8" required autocomplete="new-password">
                         </div>
 
                         <div class="d-grid mt-4">
