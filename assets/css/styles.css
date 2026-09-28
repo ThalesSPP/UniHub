@@ -1,79 +1,247 @@
-body {
-    background-color: var(--bs-body-bg);
-    color: var(--bs-body-color);
+:root,
+[data-bs-theme="light"]{
+    --unihub-bg: #f4f7fb;
+    --unihub-bg-secondary: #eaf0f8;
+
+    --unihub-card: #ffffff;
+    --unihub-card-secondary: #f8fafc;
+
+    --unihub-text: #0f172a;
+    --unihub-text-secondary: #64748b;
+
+    --unihub-border: #d8e0eb;
+
+    --unihub-navy: #020b2c;
+    --unihub-navy-light: #0b1b3d;
+
+    --unihub-primary: #0d6efd;
+    --unihub-primary-hover: #0b5ed7;
+
+    --unihub-navbar-bg: #ffffff;
+    --unihub-footer-bg: #eaf0f8;
+    --unihub-nav-text: #0f172a;
+    --unihub-nav-hover: #0d6efd;
+
+    --unihub-placeholder-bg: #e9eef5;
+    --unihub-placeholder-text: #64748b;
+
+    --unihub-shadow: rgba(2, 11, 44, 0.08);
 }
 
-.navbar-brand {
-    color: #0d6efd;
+[data-bs-theme="dark"]{
+    --unihub-bg: #020817;
+    --unihub-bg-secondary: #050f24;
+
+    --unihub-card: #07142b;
+    --unihub-card-secondary: #0c1c38;
+
+    --unihub-text: #f8fafc;
+    --unihub-text-secondary: #94a3b8;
+
+    --unihub-border: #26344d;
+
+    --unihub-navy: #020b2c;
+    --unihub-navy-light: #0b1b3d;
+
+    --unihub-primary: #3b82f6;
+    --unihub-primary-hover: #2563eb;
+
+    --unihub-navbar-bg: #020b2c;
+    --unihub-footer-bg: #020b2c;
+    --unihub-nav-text: #f8fafc;
+    --unihub-nav-hover: #60a5fa;
+
+    --unihub-placeholder-bg: #0c1c38;
+    --unihub-placeholder-text: #94a3b8;
+
+    --unihub-shadow: rgba(0, 0, 0, 0.28);
 }
 
-.hero {
-    background-color: var(--bs-body-bg);
+body{
+    min-height: 100vh;
+    background: linear-gradient(
+        180deg,
+        var(--unihub-bg) 0%,
+        var(--unihub-bg-secondary) 100%
+    );
+
+    background-attachment: fixed;
+    color: var(--unihub-text);
 }
 
-.hero-image {
-    min-height: 350px;
+.navbar{
+    background-color: var(--unihub-navbar-bg) !important;
+    border-bottom: 1px solid var(--unihub-border) !important;
+    box-shadow: 0 2px 10px var(--unihub-shadow);
+}
 
+.navbar-brand{
+    color: var(--unihub-nav-text) !important;
     display: flex;
     align-items: center;
-    justify-content: center;
-
-    background-color: #e9ecef;
-
-    border-radius: 20px;
-
-    color: #6c757d;
+    gap: 8px;
+    font-weight: 700;
+    text-decoration: none;
 }
 
-.busca-home {
+.navbar-brand:hover{
+    color: var(--unihub-nav-hover) !important;
+}
+
+.navbar .nav-link{
+    color: var(--unihub-nav-text) !important;
+}
+
+.navbar .nav-link:hover,
+.navbar .nav-link:focus{
+    color: var(--unihub-nav-hover) !important;
+}
+
+.navbar-toggler{
+    border-color: var(--unihub-border);
+}
+
+[data-bs-theme="dark"] .navbar-toggler-icon{
+    filter: invert(1);
+}
+
+.hero{
+    background-color: transparent;
+}
+
+.busca-home{
     margin-top: -30px;
+    background-color: var(--unihub-card);
+    border: 1px solid var(--unihub-border) !important;
+    box-shadow: 0 6px 18px var(--unihub-shadow) !important;
 }
 
-.imagem-anuncio {
-    height: 220px;
+.card{
+    background-color: var(--unihub-card);
+    color: var(--unihub-text);
+    border: 1px solid var(--unihub-border);
+    box-shadow: 0 4px 14px var(--unihub-shadow);
+}
 
+.auth-card{
+    background-color: var(--unihub-card);
+    border: 1px solid var(--unihub-border);
+    box-shadow: 0 4px 14px var(--unihub-shadow);
+}
+
+.card-title{
+    color: var(--unihub-text);
+}
+
+h1, h2, h3, h4, h5, h6{
+    color: var(--unihub-text);
+}
+
+.text-secondary,
+.text-body-secondary{
+    color: var(--unihub-text-secondary) !important;
+}
+
+.form-label{
+    color: var(--unihub-text);
+}
+
+.form-control,
+.form-select,
+textarea{
+    background-color: var(--unihub-card-secondary);
+    color: var(--unihub-text);
+    border: 1px solid var(--unihub-border);
+}
+
+.form-control:focus,
+.form-select:focus,
+textarea:focus{
+    background-color: var(--unihub-card-secondary);
+    color: var(--unihub-text);
+    border-color: var(--unihub-primary);
+    box-shadow: 0 0 0 0.2rem rgba(59, 130, 246, 0.15);
+}
+
+.form-control::placeholder,
+textarea::placeholder{
+    color: var(--unihub-text-secondary);
+}
+
+.form-select option{
+    background-color: var(--unihub-card);
+    color: var(--unihub-text);
+}
+
+.btn-primary{
+    background-color: var(--unihub-primary);
+    border-color: var(--unihub-primary);
+}
+
+.btn-primary:hover,
+.btn-primary:focus{
+    background-color: var(--unihub-primary-hover);
+    border-color: var(--unihub-primary-hover);
+}
+
+.btn-outline-primary{
+    color: var(--unihub-primary);
+    border-color: var(--unihub-primary);
+}
+
+.btn-outline-primary:hover,
+.btn-outline-primary:focus{
+    background-color: var(--unihub-primary);
+    border-color: var(--unihub-primary);
+    color: #ffffff;
+}
+
+.imagem-anuncio{
+    height: 220px;
     display: flex;
     align-items: center;
     justify-content: center;
-
-    background-color: #e9ecef;
-
-    color: #6c757d;
-
+    background-color: var(--unihub-placeholder-bg);
+    color: var(--unihub-placeholder-text);
     border-radius: var(--bs-card-border-radius)
                    var(--bs-card-border-radius)
                    0 0;
 }
 
-.botao-tema-flutuante {
+.card-img-top{
+    height: 220px;
+    object-fit: cover;
+}
+
+.botao-tema-flutuante{
     position: fixed;
     right: 24px;
     bottom: 24px;
-
     width: 48px;
     height: 48px;
-
-    border-radius: 50%;
-
     display: flex;
     align-items: center;
     justify-content: center;
-
+    border-radius: 50%;
     z-index: 1050;
-
     font-size: 1.2rem;
-
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    background-color: var(--unihub-card);
+    color: var(--unihub-text);
+    border: 1px solid var(--unihub-border);
+    box-shadow: 0 4px 12px var(--unihub-shadow);
 }
 
-.auth-card {
-    border: 1px solid rgba(0, 0, 0, 0.08);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+.botao-tema-flutuante:hover{
+    background-color: var(--unihub-card-secondary);
 }
 
-[data-bs-theme="dark"] .auth-card {
-    border-color: rgba(255, 255, 255, 0.12);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+[data-bs-theme="dark"] .botao-tema-flutuante{
+    background-color: var(--unihub-navy-light);
+    color: #ffffff;
+}
+
+[data-bs-theme="dark"] .botao-tema-flutuante:hover{
+    background-color: #102552;
 }
 
 .galeria-anuncio{
@@ -85,7 +253,8 @@ body {
     height: 450px;
     overflow: hidden;
     border-radius: 0.5rem;
-    background-color: var(--bs-tertiary-bg);
+    background-color: var(--unihub-card-secondary);
+    cursor: zoom-in;
 }
 
 .imagem-principal-anuncio{
@@ -130,27 +299,18 @@ body {
 
 .miniatura-anuncio.ativa{
     opacity: 1;
-    border-color: var(--bs-primary);
+    border-color: var(--unihub-primary);
 }
 
 .sem-imagem-anuncio{
     height: 350px;
-}
+    display: flex;
+    align-items: center;
+    justify-content: center;
 
-@media(max-width: 768px){
-    .imagem-principal-container{
-        height: 300px;
-    }
+    background-color: var(--unihub-placeholder-bg);
 
-    .miniatura-anuncio{
-        width: 85px;
-        height: 65px;
-        min-width: 85px;
-    }
-}
-
-.imagem-principal-container{
-    cursor: zoom-in;
+    color: var(--unihub-placeholder-text);
 }
 
 .imagem-ampliada{
@@ -167,4 +327,74 @@ body {
     z-index: 10;
     background-color: white;
     opacity: 0.9;
+}
+
+footer{
+    background-color: var(--unihub-footer-bg) !important;
+    color: var(--unihub-nav-text);
+    border-top: 1px solid var(--unihub-border) !important;
+}
+
+footer p, footer span, footer small{
+    color: var(--unihub-text-secondary);
+}
+
+footer .fw-bold{
+    color: var(--unihub-nav-text);
+}
+
+footer a{
+    color: var(--unihub-nav-text);
+    text-decoration: none;
+}
+
+footer a:hover{
+    color: var(--unihub-nav-hover);
+}
+
+hr{
+    border-color: var(--unihub-border);
+    opacity: 1;
+}
+
+.modal-content{
+    background-color: var(--unihub-card);
+    color: var(--unihub-text);
+}
+
+@media(max-width: 768px){
+    .logo-navbar{
+        width: 48px;
+        height: 48px;
+    }
+
+    .imagem-principal-container{
+        height: 300px;
+    }
+
+    .miniatura-anuncio{
+        width: 85px;
+        height: 65px;
+        min-width: 85px;
+    }
+
+    .hero-image{
+        min-height: 280px;
+    }
+
+    .botao-tema-flutuante{
+        right: 16px;
+        bottom: 16px;
+
+        width: 44px;
+        height: 44px;
+    }
+}
+
+.logo-navbar{
+    width: 45px;
+    height: 45px;
+    object-fit: contain;
+    display: block;
+    transform: scale(2.00);
 }

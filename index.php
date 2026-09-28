@@ -40,28 +40,28 @@
 
 <section class="hero">
     <div class="container py-5">
-        <div class="row align-items-center py-lg-5">
-            <div class="col-lg-6">
+        <div class="row py-lg-5">
+            <div class="col-12">
+
                 <h1 class="display-4 fw-bold mb-3">
                     Encontre a moradia ideal para sua vida acadêmica
                 </h1>
 
                 <p class="lead text-secondary mb-4">
-                    Encontre casas, apartamentos, kitnets,
-                    quartos e repúblicas voltadas ao público
-                    estudantil do IFES Campus de Alegre.
+                    O UniHub conecta estudantes a opções de moradia de forma simples e prática.
+                    Encontre casas, apartamentos, kitnets, quartos e repúblicas voltadas ao
+                    público estudantil do IFES Campus de Alegre.
+                </p>
+
+                <p class="text-body-secondary mb-4">
+                    Consulte informações sobre os imóveis, localização, valores e condições
+                    oferecidas pelos anunciantes. Tudo em um único lugar para facilitar sua
+                    busca por uma nova moradia durante a vida acadêmica.
                 </p>
 
                 <a href="/UniHub/pages/anuncios/imoveis.php" class="btn btn-primary btn-lg">
                     Ver imóveis
                 </a>
-
-            </div>
-
-            <div class="col-lg-6 mt-5 mt-lg-0">
-                <div class="hero-image">
-                    Imagem do UniHub
-                </div>
             </div>
         </div>
     </div>
