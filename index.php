@@ -1,5 +1,40 @@
 <?php
+    require_once __DIR__ . '/config/database.php';
     $titulo = "UniHub - Início";
+
+    $sql = "
+        SELECT
+            a.id_anuncio,
+            a.titulo,
+            a.valor,
+            t.nome AS tipo,
+            e.cidade,
+            e.estado,
+            (
+                SELECT ia.caminho_arquivo
+                FROM imagem_anuncio ia
+                WHERE ia.id_anuncio = a.id_anuncio
+                ORDER BY
+                    ia.principal DESC,
+                    ia.ordem ASC,
+                    ia.id_imagem ASC
+                LIMIT 1
+            ) AS imagem
+        FROM anuncio a
+        INNER JOIN tipo_anuncio t
+            ON t.id_tipo = a.id_tipo
+        INNER JOIN endereco e
+            ON e.id_endereco = a.id_endereco
+        WHERE a.status = 'ATIVO'
+        ORDER BY a.data_cadastro DESC
+        LIMIT 3
+    ";
+
+    $stmt = $pdo->prepare($sql);
+    $stmt->execute();
+
+    $anuncios = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
     ob_start();
 ?>
 
@@ -17,7 +52,7 @@
                     estudantil do IFES Campus de Alegre.
                 </p>
 
-                <a hhref="/UniHub/pages/anuncios/imoveis.php" class="btn btn-primary btn-lg">
+                <a href="/UniHub/pages/anuncios/imoveis.php" class="btn btn-primary btn-lg">
                     Ver imóveis
                 </a>
 
@@ -47,12 +82,12 @@
                                 Todos os tipos
                             </option>
 
-                            <option value="casa">
-                                Casa
-                            </option>
-
                             <option value="apartamento">
                                 Apartamento
+                            </option>
+
+                            <option value="casa">
+                                Casa
                             </option>
 
                             <option value="kitnet">
@@ -65,6 +100,10 @@
 
                             <option value="republica">
                                 República
+                            </option>
+
+                            <option value="outro">
+                                Outro
                             </option>
                         </select>
                     </div>
@@ -121,42 +160,59 @@
             </p>
         </div>
 
-        <a href="imoveis.php" class="text-decoration-none">
+        <a href="/UniHub/pages/anuncios/imoveis.php" class="text-decoration-none">
             Ver todos
         </a>
 
     </div>
 
     <div class="row g-4">
-        <div class="col-md-6 col-lg-4">
-            <div class="card h-100 border-0 shadow-sm">
-                <div class="imagem-anuncio">
-                    Foto do imóvel
+        <?php if(!empty($anuncios)): ?>
+            <?php foreach($anuncios as $anuncio): ?>
+                <div class="col-md-6 col-lg-4">
+
+                    <div class="card h-100 border-0 shadow-sm">
+                        <?php if(!empty($anuncio['imagem'])): ?>
+                            <img src="/UniHub/<?= htmlspecialchars($anuncio['imagem']) ?>" class="card-img-top" style="height: 220px; object-fit: cover;" alt="<?= htmlspecialchars($anuncio['titulo']) ?>">
+
+                        <?php else: ?>
+                            <div class="imagem-anuncio">
+                                Sem imagem
+                            </div>
+                        <?php endif; ?>
+
+                        <div class="card-body">
+                            <span class="badge text-bg-primary mb-2">
+                                <?= htmlspecialchars(ucfirst(strtolower($anuncio['tipo']))) ?>
+                            </span>
+
+                            <h5 class="card-title">
+                                <?= htmlspecialchars($anuncio['titulo']) ?>
+                            </h5>
+
+                            <p class="text-secondary">
+                                <?= htmlspecialchars($anuncio['cidade']) ?> - <?= htmlspecialchars($anuncio['estado']) ?>
+                            </p>
+
+                            <h5 class="fw-bold">
+                                R$ <?= number_format($anuncio['valor'], 2, ',', '.') ?>
+                            </h5>
+
+                            <a href="/UniHub/pages/anuncios/detalhes-anuncio.php?id=<?= $anuncio['id_anuncio'] ?>" class="btn btn-outline-primary w-100 mt-2">
+                                Ver detalhes
+                            </a>
+                        </div>
+                    </div>
                 </div>
-                <div class="card-body">
-                    <span class="badge text-bg-primary mb-2">
-                        Kitnet
-                    </span>
+            <?php endforeach; ?>
 
-                    <h5 class="card-title">
-                        Kitnet próxima ao IFES
-                    </h5>
-
-                    <p class="text-secondary">
-                        Alegre - ES
-                    </p>
-
-                    <h5 class="fw-bold">
-                        R$ 750,00
-                    </h5>
-
-                    <a href="/UniHub/pages/anuncios/detalhes-anuncio.php?id=1" class="btn btn-outline-primary w-100 mt-2">
-                        Ver detalhes
-                    </a>
-
+        <?php else: ?>
+            <div class="col-12">
+                <div class="alert alert-secondary text-center mb-0">
+                    Nenhum imóvel disponível no momento.
                 </div>
             </div>
-        </div>
+        <?php endif; ?>
     </div>
 </section>
 
