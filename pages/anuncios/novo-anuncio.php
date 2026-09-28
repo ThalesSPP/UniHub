@@ -173,49 +173,49 @@
                                 <div class="col-md-6">
                                     <div class="form-check">
                                         <input type="checkbox" class="form-check-input" id="clausula_animais" name="clausula_animais" value="1" <?= !empty($dados['clausula_animais']) ? 'checked' : '' ?>>
-                                        <label for="clausula_animais" class="form-check-label">Animais</label>
+                                        <label for="clausula_animais" class="form-check-label">Não permite animais</label>
                                     </div>
                                 </div>
 
                                 <div class="col-md-6">
                                     <div class="form-check">
                                         <input type="checkbox" class="form-check-input" id="clausula_caucao" name="clausula_caucao" value="1" <?= !empty($dados['clausula_caucao']) ? 'checked' : '' ?>>
-                                        <label for="clausula_caucao" class="form-check-label">Caução</label>
+                                        <label for="clausula_caucao" class="form-check-label">Exigir caução</label>
                                     </div>
                                 </div>
 
                                 <div class="col-md-6">
                                     <div class="form-check">
                                         <input type="checkbox" class="form-check-input" id="clausula_agua_energia" name="clausula_agua_energia" value="1" <?= !empty($dados['clausula_agua_energia']) ? 'checked' : '' ?>>
-                                        <label for="clausula_agua_energia" class="form-check-label">Água e energia</label>
+                                        <label for="clausula_agua_energia" class="form-check-label">Água e energia por conta do inquilino</label>
                                     </div>
                                 </div>
 
                                 <div class="col-md-6">
                                     <div class="form-check">
                                         <input type="checkbox" class="form-check-input" id="clausula_rescisao" name="clausula_rescisao" value="1" <?= !empty($dados['clausula_rescisao']) ? 'checked' : '' ?>>
-                                        <label for="clausula_rescisao" class="form-check-label">Rescisão</label>
+                                        <label for="clausula_rescisao" class="form-check-label">Rescisão antecipada com multa</label>
                                     </div>
                                 </div>
 
                                 <div class="col-md-6">
                                     <div class="form-check">
                                         <input type="checkbox" class="form-check-input" id="clausula_visitas" name="clausula_visitas" value="1" <?= !empty($dados['clausula_visitas']) ? 'checked' : '' ?>>
-                                        <label for="clausula_visitas" class="form-check-label">Visitas</label>
+                                        <label for="clausula_visitas" class="form-check-label">Permite visitas</label>
                                     </div>
                                 </div>
 
                                 <div class="col-md-6">
                                     <div class="form-check">
                                         <input type="checkbox" class="form-check-input" id="clausula_manutencao" name="clausula_manutencao" value="1" <?= !empty($dados['clausula_manutencao']) ? 'checked' : '' ?>>
-                                        <label for="clausula_manutencao" class="form-check-label">Manutenção</label>
+                                        <label for="clausula_manutencao" class="form-check-label">Conservação e pequenos reparos por conta do inquilino</label>
                                     </div>
                                 </div>
 
                                 <div class="col-md-6">
                                     <div class="form-check">
                                         <input type="checkbox" class="form-check-input" id="clausula_multa" name="clausula_multa" value="1" <?= !empty($dados['clausula_multa']) ? 'checked' : '' ?>>
-                                        <label for="clausula_multa" class="form-check-label">Multa</label>
+                                        <label for="clausula_multa" class="form-check-label">Aplicar multas por descumprimento</label>
                                     </div>
                                 </div>
                             </div>
@@ -227,16 +227,18 @@
                             <div id="clausulas_extras">
                                 <?php if(!empty($dados['clausulas_extras'])): ?>
                                     <?php foreach($dados['clausulas_extras'] as $clausula): ?>
-                                        <div class="mb-3">
-                                            <textarea class="form-control" name="clausulas_extras[]" rows="3" placeholder="Digite uma cláusula adicional"><?= htmlspecialchars($clausula) ?></textarea>
+                                        <div class="d-flex gap-2 mb-3 clausula-extra">
+                                            <textarea class="form-control" name="clausulas_extras[]" rows="3" readonly><?= htmlspecialchars($clausula) ?></textarea>
+                                            <button type="button" class="btn btn-outline-danger excluir-clausula">Excluir</button>
                                         </div>
                                     <?php endforeach; ?>
-
-                                <?php else: ?>
-                                    <div class="mb-3">
-                                        <textarea class="form-control" name="clausulas_extras[]" rows="3" placeholder="Digite uma cláusula adicional"></textarea>
-                                    </div>
+                     
                                 <?php endif; ?>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="nova_clausula" class="form-label">Nova cláusula</label>
+                                <textarea class="form-control" id="nova_clausula" rows="3" placeholder="Digite uma cláusula adicional"></textarea>
                             </div>
                             <button type="button" class="btn btn-success btn-sm" id="adicionar_clausula">Adicionar cláusula</button>
                         </div>
@@ -257,6 +259,7 @@
     const opcoesContrato = document.getElementById('opcoes_contrato');
     const adicionarClausula = document.getElementById('adicionar_clausula');
     const clausulasExtras = document.getElementById('clausulas_extras');
+    const novaClausula = document.getElementById('nova_clausula');
 
     function atualizarContrato(){
         if(usarContrato.checked){
@@ -271,14 +274,42 @@
     usarContrato.addEventListener('change', atualizarContrato);
     atualizarContrato();
     adicionarClausula.addEventListener('click', function(){
-        const campo = document.createElement('div');
+        const texto = novaClausula.value.trim();
 
-        campo.className = 'mb-3';
-        campo.innerHTML = '<textarea class="form-control" name="clausulas_extras[]" rows="3" placeholder="Digite uma cláusula adicional"></textarea>';
+        if(texto === ''){
+            return;
+        }
+
+        const campo = document.createElement('div');
+        campo.className = 'd-flex gap-2 mb-3 clausula-extra';
+        const textarea = document.createElement('textarea');
+
+        textarea.className = 'form-control';
+        textarea.name = 'clausulas_extras[]';
+        textarea.rows = 3;
+        textarea.readOnly = true;
+        textarea.value = texto;
+
+        const botaoExcluir = document.createElement('button');
+
+        botaoExcluir.type = 'button';
+        botaoExcluir.className = 'btn btn-outline-danger excluir-clausula';
+        botaoExcluir.textContent = 'Excluir';
+
+        campo.appendChild(textarea);
+        campo.appendChild(botaoExcluir);
 
         clausulasExtras.appendChild(campo);
+
+        novaClausula.value = '';
+        novaClausula.focus();
     });
 
+    clausulasExtras.addEventListener('click', function(evento){
+        if(evento.target.classList.contains('excluir-clausula')){
+            evento.target.closest('.clausula-extra').remove();
+        }
+    });
 </script>
 
 <?php

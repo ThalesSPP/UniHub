@@ -18,7 +18,12 @@
     $idUsuario = $_SESSION['id_usuario'];
     $titulo = trim($_POST['titulo'] ?? '');
     $idTipo = $_POST['id_tipo'] ?? '';
-    $valor = $_POST['valor'] ?? '';
+    $valor = trim($_POST['valor'] ?? '');
+    if(str_contains($valor, ',')){
+        $valor = str_replace('.', '', $valor);
+        $valor = str_replace(',', '.', $valor);
+    }
+    
     $descricao = trim($_POST['descricao'] ?? '');
     $logradouro = trim($_POST['logradouro'] ?? '');
     $numero = trim($_POST['numero'] ?? '');
@@ -413,7 +418,7 @@
             }
         }
 
-        $_SESSION['erro'] = 'Não foi possível cadastrar o anúncio. Tente novamente.';
+        $_SESSION['erro'] = 'Erro ao cadastrar anúncio: ' . $erro->getMessage();
 
         header('Location: /UniHub/pages/anuncios/novo-anuncio.php');
         exit;
