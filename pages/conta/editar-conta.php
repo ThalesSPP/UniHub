@@ -13,6 +13,11 @@
         SELECT
             id_usuario,
             nome,
+            cpf,
+            rg,
+            nacionalidade,
+            estado_civil,
+            profissao,
             email,
             telefone
         FROM usuario
@@ -25,7 +30,8 @@
         $_SESSION['id_usuario']
     ]);
 
-    $usuario = $stmt->fetch();
+    $usuario = $stmt->fetch(PDO::FETCH_ASSOC);
+
     if(!$usuario){
         session_destroy();
 
@@ -38,7 +44,6 @@
 
     $titulo = 'UniHub - Editar Conta';
     ob_start();
-
 ?>
 
 <section class="container py-5">
@@ -56,7 +61,7 @@
 
             <div class="card auth-card">
                 <div class="card-body p-4 p-md-5">
-                    <?php if (isset($_SESSION['erro'])): ?>
+                    <?php if(isset($_SESSION['erro'])): ?>
                         <div class="alert alert-danger" role="alert">
                             <?= htmlspecialchars($_SESSION['erro']) ?>
                         </div>
@@ -65,18 +70,91 @@
 
                     <form action="/UniHub/actions/conta/atualizar-conta.php" method="POST">
                         <div class="mb-3">
-                            <label for="nome" class="form-label">Nome completo</label>
-                            <input type="text" class="form-control" id="nome" name="nome" value="<?= htmlspecialchars($dadosEdicao['nome']) ?>" required>
+                            <label for="nome" class="form-label">
+                                Nome completo
+                            </label>
+
+                            <input type="text" class="form-control" id="nome" name="nome" value="<?= htmlspecialchars($dadosEdicao['nome'] ?? '') ?>" required>
                         </div>
 
                         <div class="mb-3">
-                            <label for="email" class="form-label" >E-mail</label>
-                            <input type="email" class="form-control" id="email" name="email" value="<?= htmlspecialchars($dadosEdicao['email']) ?>" required autocomplete="email">
+                            <label for="cpf" class="form-label">
+                                CPF
+                            </label>
+
+                            <input type="text" class="form-control" id="cpf" name="cpf" placeholder="Somente números" value="<?= htmlspecialchars($dadosEdicao['cpf'] ?? '') ?>" maxlength="14">
                         </div>
 
                         <div class="mb-3">
-                            <label for="telefone" class="form-label"> Telefone</label>
-                            <input type="tel" class="form-control" id="telefone" name="telefone" value="<?= htmlspecialchars($dadosEdicao['telefone']) ?>" required autocomplete="tel">
+                            <label for="rg" class="form-label">
+                                RG
+                            </label>
+
+                            <input type="text" class="form-control" id="rg" name="rg" value="<?= htmlspecialchars($dadosEdicao['rg'] ?? '') ?>">
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="nacionalidade" class="form-label">
+                                Nacionalidade
+                            </label>
+
+                            <input type="text" class="form-control" id="nacionalidade" name="nacionalidade" placeholder="Ex.: Brasileira" value="<?= htmlspecialchars($dadosEdicao['nacionalidade'] ?? '') ?>">
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="estado_civil" class="form-label">
+                                Estado civil
+                            </label>
+
+                            <select class="form-select" id="estado_civil" name="estado_civil">
+                                <option value="">
+                                    Selecione
+                                </option>
+
+                                <option value="Solteiro(a)" <?= ($dadosEdicao['estado_civil'] ?? '') === 'Solteiro(a)' ? 'selected' : '' ?>>
+                                    Solteiro(a)
+                                </option>
+
+                                <option value="Casado(a)" <?= ($dadosEdicao['estado_civil'] ?? '') === 'Casado(a)' ? 'selected' : '' ?>>
+                                    Casado(a)
+                                </option>
+
+                                <option value="Divorciado(a)" <?= ($dadosEdicao['estado_civil'] ?? '') === 'Divorciado(a)' ? 'selected' : '' ?>>
+                                    Divorciado(a)
+                                </option>
+
+                                <option value="Viúvo(a)" <?= ($dadosEdicao['estado_civil'] ?? '') === 'Viúvo(a)' ? 'selected' : '' ?>>
+                                    Viúvo(a)
+                                </option>
+
+                                <option value="União estável" <?= ($dadosEdicao['estado_civil'] ?? '') === 'União estável' ? 'selected' : '' ?>>
+                                    União estável
+                                </option>
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="profissao" class="form-label">
+                                Profissão
+                            </label>
+
+                            <input type="text" class="form-control" id="profissao" name="profissao" value="<?= htmlspecialchars($dadosEdicao['profissao'] ?? '') ?>">
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="email" class="form-label">
+                                E-mail
+                            </label>
+
+                            <input type="email" class="form-control" id="email" name="email" value="<?= htmlspecialchars($dadosEdicao['email'] ?? '') ?>" required autocomplete="email">
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="telefone" class="form-label">
+                                Telefone
+                            </label>
+
+                            <input type="tel" class="form-control" id="telefone" name="telefone" value="<?= htmlspecialchars($dadosEdicao['telefone'] ?? '') ?>" required autocomplete="tel">
                         </div>
 
                         <hr class="my-4">
@@ -90,23 +168,42 @@
                         </p>
 
                         <div class="mb-3">
-                            <label for="senha_atual" class="form-label">Senha atual</label>
+                            <label for="senha_atual" class="form-label">
+                                Senha atual
+                            </label>
+
                             <input type="password" class="form-control" id="senha_atual" name="senha_atual" placeholder="Digite sua senha atual" autocomplete="current-password">
                         </div>
 
                         <div class="mb-3">
-                            <label for="nova_senha" class="form-label" >Nova senha</label>
-                            <input type="password" class="form-control" id="nova_senha" name="nova_senha" placeholder="Digite a nova senha" autocomplete="new-password">
+                            <label for="nova_senha" class="form-label">
+                                Nova senha
+                            </label>
+
+                            <input type="password" class="form-control" id="nova_senha" name="nova_senha" placeholder="Digite a nova senha"
+                                minlength="8" pattern="(?=.*[A-Z])(?=.*[0-9])(?=.*[^A-Za-z0-9]).{8,}" title="A senha deve possuir no mínimo 8 caracteres, uma letra maiúscula, um número e um caractere especial." autocomplete="new-password">
+
+                            <div class="form-text">
+                                A senha deve possuir no mínimo 8 caracteres, uma letra maiúscula, um número e um caractere especial.
+                            </div>
                         </div>
 
                         <div class="mb-3">
-                            <label for="confirmar_nova_senha" class="form-label">Confirmar nova senha</label>
-                            <input type="password" class="form-control" id="confirmar_nova_senha" name="confirmar_nova_senha" placeholder="Digite novamente a nova senha" autocomplete="new-password">
+                            <label for="confirmar_nova_senha" class="form-label">
+                                Confirmar nova senha
+                            </label>
+
+                            <input type="password" class="form-control" id="confirmar_nova_senha" name="confirmar_nova_senha" placeholder="Digite novamente a nova senha" minlength="8" autocomplete="new-password">
                         </div>
 
                         <div class="d-flex gap-2 mt-4">
-                            <button type="submit" class="btn btn-primary">Salvar alterações</button>
-                            <a href="/UniHub/pages/conta/minha-conta.php" class="btn btn-outline-secondary">Cancelar</a>
+                            <button type="submit" class="btn btn-primary">
+                                Salvar alterações
+                            </button>
+
+                            <a href="/UniHub/pages/conta/minha-conta.php" class="btn btn-outline-secondary">
+                                Cancelar
+                            </a>
                         </div>
                     </form>
                 </div>

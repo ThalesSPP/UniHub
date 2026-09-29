@@ -167,6 +167,21 @@ CREATE TABLE contrato_gerado (
     CONSTRAINT fk_contrato_gerado_configuracao FOREIGN KEY (id_configuracao) REFERENCES configuracao_contrato(id_configuracao) ON DELETE CASCADE
 );
 
+CREATE TABLE recuperacao_senha (
+    id_recuperacao INT UNSIGNED AUTO_INCREMENT,
+    id_usuario INT UNSIGNED NOT NULL,
+
+    token_hash CHAR(64) NOT NULL,
+    data_expiracao DATETIME NOT NULL,
+    utilizado BOOLEAN NOT NULL DEFAULT FALSE,
+
+    data_cadastro DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT pk_recuperacao_senha PRIMARY KEY (id_recuperacao),
+    CONSTRAINT uq_recuperacao_token UNIQUE (token_hash),
+    CONSTRAINT fk_recuperacao_usuario FOREIGN KEY (id_usuario) REFERENCES usuario(id_usuario) ON DELETE CASCADE
+);
+
 INSERT INTO tipo_anuncio (nome, ativo)
 VALUES
     ('CASA', TRUE),

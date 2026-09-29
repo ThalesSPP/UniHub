@@ -8,7 +8,7 @@
         exit;
     }
 
-    $titulo = 'UniHub - Entrar';
+    $titulo = 'UniHub - Recuperar senha';
     ob_start();
 ?>
 
@@ -19,69 +19,54 @@
                 <div class="card-body p-4 p-md-5">
                     <div class="text-center mb-4">
                         <h1 class="h3 fw-bold">
-                            Entrar no UniHub
+                            Recuperar senha
                         </h1>
 
                         <p class="text-body-secondary mb-0">
-                            Acesse sua conta para gerenciar seus anúncios.
+                            Informe o e-mail cadastrado na sua conta para receber as instruções de recuperação.
                         </p>
-
                     </div>
 
-                    <?php if (isset($_SESSION['erro'])): ?>
+                    <?php if(isset($_SESSION['erro'])): ?>
                         <div class="alert alert-danger" role="alert">
                             <?= htmlspecialchars($_SESSION['erro']) ?>
                         </div>
-
                         <?php unset($_SESSION['erro']); ?>
                     <?php endif; ?>
 
-                    <?php if (isset($_SESSION['sucesso'])): ?>
+                    <?php if(isset($_SESSION['sucesso'])): ?>
                         <div class="alert alert-success" role="alert">
                             <?= htmlspecialchars($_SESSION['sucesso']) ?>
                         </div>
-
                         <?php unset($_SESSION['sucesso']); ?>
                     <?php endif; ?>
 
-                    <form action="/UniHub/actions/auth/autenticar.php" method="POST">
+                    <form action="/UniHub/actions/auth/solicitar-recuperacao.php" method="POST">
                         <div class="mb-3">
                             <label for="email" class="form-label">
                                 E-mail
                             </label>
 
-                            <input type="email" class="form-control" id="email" name="email" placeholder="seuemail@exemplo.com" value="<?= htmlspecialchars($_SESSION['email_login'] ?? '') ?>" required autocomplete="email">
-                        </div>
-
-                        <div class="mb-3">
-                            <label for="senha" class="form-label">
-                                Senha
-                            </label>
-
-                            <input type="password" class="form-control" id="senha" name="senha" placeholder="Digite sua senha" required autocomplete="current-password">
+                            <input type="email" class="form-control" id="email" name="email" placeholder="seuemail@exemplo.com" value="<?= htmlspecialchars($_SESSION['email_recuperacao'] ?? '') ?>" required autocomplete="email" >
                         </div>
 
                         <div class="d-grid mt-4">
                             <button type="submit" class="btn btn-primary">
-                                Entrar
+                                Enviar instruções
                             </button>
-                        </div>
-
-                        <br>
-
-                        <div class="text-end">
-                            <a href="/UniHub/pages/auth/esqueci-senha.php" class="text-decoration-none">
-                                Esqueci minha senha
-                            </a>
                         </div>
                     </form>
 
                     <hr class="my-4">
+
                     <div class="text-center">
                         <p class="mb-2">
-                            Ainda não possui uma conta?
+                            Lembrou sua senha?
                         </p>
-                        <a href="/UniHub/pages/auth/cadastro.php" class="text-decoration-none">Cadastre-se como anunciante</a>
+
+                        <a href="/UniHub/pages/auth/login.php" class="text-decoration-none">
+                            Voltar para o login
+                        </a>
                     </div>
                 </div>
             </div>
@@ -90,7 +75,7 @@
 </section>
 
 <?php
-    unset($_SESSION['email_login']);
+    unset($_SESSION['email_recuperacao']);
 
     $conteudo = ob_get_clean();
     require __DIR__ . '/../../layouts/master.php';

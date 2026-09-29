@@ -72,7 +72,9 @@
 
     if($status === 'ATIVO'){
         $_SESSION['sucesso'] = 'Anúncio ativado com sucesso.';
-    }else{
+    }
+    
+    else{
         $_SESSION['sucesso'] = 'Anúncio desativado com sucesso.';
     }
 
