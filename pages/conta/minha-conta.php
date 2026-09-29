@@ -298,6 +298,14 @@
                                                         <?php endif; ?>
                                                     </form>
 
+                                                    <form action="/UniHub/actions/conta/excluir-anuncio.php" method="POST" onsubmit="return confirm('Tem certeza que deseja excluir este anúncio? Esta ação não poderá ser desfeita.');">
+                                                        <input type="hidden" name="id_anuncio" value="<?= $anuncio['id_anuncio'] ?>">
+
+                                                        <button type="submit" class="btn btn-outline-danger btn-sm">
+                                                            Excluir
+                                                        </button>
+                                                    </form>
+
                                                     <?php if($anuncio['usar_contrato']): ?>
                                                         <a href="/UniHub/pages/contratos/gerar-contrato.php?id=<?= $anuncio['id_anuncio'] ?>" class="btn btn-success btn-sm">
                                                             Emitir contrato
@@ -327,6 +335,40 @@
                             </a>
                         </div>
                     <?php endif; ?>
+                </div>
+            </div>
+
+            <div class="card auth-card mt-4">
+                <div class="card-body p-4">
+                    <h2 class="h5 fw-bold text-danger mb-1">
+                        Excluir conta
+                    </h2>
+
+                    <p class="text-body-secondary mb-3">
+                        Ao excluir sua conta, seus anúncios também serão removidos permanentemente.
+                    </p>
+
+                    <form action="/UniHub/actions/conta/excluir-conta.php" method="POST" onsubmit="return confirm('Tem certeza que deseja excluir sua conta? Esta ação não poderá ser desfeita.');">
+                        <div class="mb-3">
+                            <label for="senha_exclusao" class="form-label">
+                                Confirme sua senha
+                            </label>
+
+                            <input
+                                type="password"
+                                class="form-control"
+                                id="senha_exclusao"
+                                name="senha"
+                                placeholder="Digite sua senha atual"
+                                required
+                                autocomplete="current-password"
+                            >
+                        </div>
+
+                        <button type="submit" class="btn btn-outline-danger">
+                            Excluir minha conta
+                        </button>
+                    </form>
                 </div>
             </div>
         </div>
