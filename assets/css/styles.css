@@ -57,8 +57,15 @@
     --unihub-shadow: rgba(0, 0, 0, 0.28);
 }
 
+html, body{
+    min-height: 100%;
+}
+
 body{
     min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+
     background: linear-gradient(
         180deg,
         var(--unihub-bg) 0%,
@@ -330,9 +337,11 @@ textarea::placeholder{
 }
 
 footer{
+    width: 100%;
     background-color: var(--unihub-footer-bg) !important;
     color: var(--unihub-nav-text);
     border-top: 1px solid var(--unihub-border) !important;
+    margin-top: auto;
 }
 
 footer p, footer span, footer small{
@@ -397,4 +406,8 @@ hr{
     object-fit: contain;
     display: block;
     transform: scale(2.00);
+}
+
+.conteudo-principal{
+    flex: 1;
 }

@@ -1,4 +1,4 @@
-<footer class="border-top py-4 mt-5">
+<footer class="border-top py-4">
     <div class="container">
         <div class="row align-items-center">
             <div class="col-md-6">

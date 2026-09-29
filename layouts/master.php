@@ -16,7 +16,7 @@
 <body>
     <?php require __DIR__ . '/../includes/navbar.php'; ?>
 
-    <main>
+    <main class="conteudo-principal">
         <?= $conteudo ?? '' ?>
     </main>
 

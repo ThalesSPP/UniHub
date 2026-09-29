@@ -34,7 +34,6 @@
     $stmt->execute();
 
     $anuncios = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
     ob_start();
 ?>
 
