@@ -401,11 +401,22 @@ hr{
 }
 
 .logo-navbar{
-    width: 45px;
-    height: 45px;
+    width: 60px;
+    height: 60px;
     object-fit: contain;
+    transform: scale(1.25);
+}
+
+.logo-navbar-dark, .logo-navbar-light{
+    display: none;
+}
+
+[data-bs-theme="light"] .logo-navbar-light{
     display: block;
-    transform: scale(2.00);
+}
+
+[data-bs-theme="dark"] .logo-navbar-dark{
+    display: block;
 }
 
 .conteudo-principal{

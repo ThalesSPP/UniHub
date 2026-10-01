@@ -1,7 +1,9 @@
 <nav class="navbar navbar-expand-lg border-bottom shadow-sm">
     <div class="container">
         <a class="navbar-brand d-flex align-items-center gap-2 fw-bold fs-3" href="/UniHub/index.php">
-            <img src="/UniHub/assets/img/logo-unihub-transparente.png" alt="Logo UniHub" class="logo-navbar">
+            <img src="/UniHub/assets/img/logo-unihub-transparente-dark.png" alt="Logo UniHub" class="logo-navbar logo-navbar-dark">
+            <img src="/UniHub/assets/img/logo-unihub-transparente-light.png" alt="Logo UniHub" class="logo-navbar logo-navbar-light">
+
             <span>
                 UniHub
             </span>
