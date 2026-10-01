@@ -50,6 +50,18 @@
         return $clausula !== '';
     }));
 
+    $imagensRemover = $_POST['imagens_remover'] ?? [];
+
+    if(!is_array($imagensRemover)){
+        $imagensRemover = [];
+    }
+
+    $imagensRemover = array_values(array_unique(array_filter(array_map(function($idImagem){
+        $idImagem = (string) $idImagem;
+
+        return ctype_digit($idImagem) ? (int) $idImagem : null;
+    }, $imagensRemover))));
+
     if($idAnuncio === '' || !ctype_digit($idAnuncio)){
         header('Location: /UniHub/pages/anuncios/imoveis.php');
         exit;
@@ -110,6 +122,110 @@
         header('Location: /UniHub/pages/anuncios/editar-anuncio.php?id=' . $idAnuncio);
         exit;
     }
+
+    $sql = "
+        SELECT
+            id_imagem,
+            caminho_arquivo,
+            ordem,
+            principal
+        FROM imagem_anuncio
+        WHERE id_anuncio = ?
+        ORDER BY
+            principal DESC,
+            ordem ASC,
+            id_imagem ASC
+    ";
+
+    $stmt = $pdo->prepare($sql);
+    $stmt->execute([$idAnuncio]);
+
+    $imagensAtuais = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    $idsImagensAtuais = array_map('intval', array_column($imagensAtuais, 'id_imagem'));
+
+    foreach($imagensRemover as $idImagem){
+        if(!in_array($idImagem, $idsImagensAtuais, true)){
+            $_SESSION['erro'] = 'Uma das imagens selecionadas para remoção é inválida.';
+
+            header('Location: /UniHub/pages/anuncios/editar-anuncio.php?id=' . $idAnuncio);
+            exit;
+        }
+    }
+
+    $novasImagens = [];
+
+    if(isset($_FILES['imagens']) && isset($_FILES['imagens']['name']) && is_array($_FILES['imagens']['name'])){
+        $tiposPermitidos = [
+            'image/jpeg' => 'jpg',
+            'image/png' => 'png',
+            'image/webp' => 'webp'
+        ];
+
+        $finfo = new finfo(FILEINFO_MIME_TYPE);
+
+        foreach($_FILES['imagens']['name'] as $indice => $nomeOriginal){
+            $erroUpload = $_FILES['imagens']['error'][$indice];
+
+            if($erroUpload === UPLOAD_ERR_NO_FILE){
+                continue;
+            }
+
+            if($erroUpload !== UPLOAD_ERR_OK){
+                $_SESSION['erro'] = 'Ocorreu um erro ao enviar uma das imagens.';
+
+                header('Location: /UniHub/pages/anuncios/editar-anuncio.php?id=' . $idAnuncio);
+                exit;
+            }
+
+            $arquivoTemporario = $_FILES['imagens']['tmp_name'][$indice];
+            $tamanho = $_FILES['imagens']['size'][$indice];
+
+            if($tamanho > 5 * 1024 * 1024){
+                $_SESSION['erro'] = 'Cada imagem deve possuir no máximo 5 MB.';
+
+                header('Location: /UniHub/pages/anuncios/editar-anuncio.php?id=' . $idAnuncio);
+                exit;
+            }
+
+            if(!is_uploaded_file($arquivoTemporario)){
+                $_SESSION['erro'] = 'Uma das imagens enviadas é inválida.';
+
+                header('Location: /UniHub/pages/anuncios/editar-anuncio.php?id=' . $idAnuncio);
+                exit;
+            }
+
+            $tipoMime = $finfo->file($arquivoTemporario);
+
+            if(!isset($tiposPermitidos[$tipoMime])){
+                $_SESSION['erro'] = 'Envie apenas imagens JPG, PNG ou WEBP.';
+
+                header('Location: /UniHub/pages/anuncios/editar-anuncio.php?id=' . $idAnuncio);
+                exit;
+            }
+
+            $novasImagens[] = [
+                'temporario' => $arquivoTemporario,
+                'extensao' => $tiposPermitidos[$tipoMime]
+            ];
+        }
+    }
+
+    $quantidadeFinalImagens =
+        count($imagensAtuais) -
+        count($imagensRemover) +
+        count($novasImagens);
+
+    if($quantidadeFinalImagens > 10){
+        $_SESSION['erro'] = 'O anúncio pode possuir no máximo 10 imagens.';
+
+        header('Location: /UniHub/pages/anuncios/editar-anuncio.php?id=' . $idAnuncio);
+        exit;
+    }
+
+    $arquivosNovosSalvos = [];
+    $arquivosRemoverFisico = [];
+    $pastaAnuncio = __DIR__ . '/../../uploads/anuncios/' . $idAnuncio;
 
     try{
         $pdo->beginTransaction();
@@ -334,6 +450,125 @@
             }
         }
 
+        if(!empty($imagensRemover)){
+            $placeholders = implode(', ', array_fill(0, count($imagensRemover), '?'));
+
+            $sql = "
+                DELETE FROM imagem_anuncio
+                WHERE id_anuncio = ?
+                AND id_imagem IN ($placeholders)
+            ";
+
+            $parametros = array_merge(
+                [$idAnuncio],
+                $imagensRemover
+            );
+
+            $stmt = $pdo->prepare($sql);
+            $stmt->execute($parametros);
+
+            foreach($imagensAtuais as $imagem){
+                if(in_array((int) $imagem['id_imagem'], $imagensRemover, true)){
+                    $arquivosRemoverFisico[] =
+                        $pastaAnuncio . '/' . basename($imagem['caminho_arquivo']);
+                }
+            }
+        }
+
+        if(!empty($novasImagens)){
+            if(!is_dir($pastaAnuncio)){
+                if(!mkdir($pastaAnuncio, 0755, true) && !is_dir($pastaAnuncio)){
+                    throw new Exception('Não foi possível criar a pasta das imagens.');
+                }
+            }
+
+            $sql = "
+                SELECT COALESCE(MAX(ordem), 0)
+                FROM imagem_anuncio
+                WHERE id_anuncio = ?
+            ";
+
+            $stmt = $pdo->prepare($sql);
+            $stmt->execute([$idAnuncio]);
+
+            $proximaOrdem = (int) $stmt->fetchColumn();
+
+            $sql = "
+                INSERT INTO imagem_anuncio (
+                    id_anuncio,
+                    caminho_arquivo,
+                    ordem,
+                    principal
+                )
+                VALUES (?, ?, ?, FALSE)
+            ";
+
+            $stmtImagem = $pdo->prepare($sql);
+
+            foreach($novasImagens as $imagem){
+                $nomeArquivo = bin2hex(random_bytes(16)) . '.' . $imagem['extensao'];
+                $caminhoFisico = $pastaAnuncio . '/' . $nomeArquivo;
+
+                if(!move_uploaded_file($imagem['temporario'], $caminhoFisico)){
+                    throw new Exception('Não foi possível salvar uma das novas imagens.');
+                }
+
+                $arquivosNovosSalvos[] = $caminhoFisico;
+
+                $caminhoBanco =
+                    'uploads/anuncios/' .
+                    $idAnuncio .
+                    '/' .
+                    $nomeArquivo;
+
+                $proximaOrdem++;
+
+                $stmtImagem->execute([
+                    $idAnuncio,
+                    $caminhoBanco,
+                    $proximaOrdem
+                ]);
+            }
+        }
+
+        $sql = "
+            SELECT
+                id_imagem
+            FROM imagem_anuncio
+            WHERE id_anuncio = ?
+            ORDER BY
+                principal DESC,
+                ordem ASC,
+                id_imagem ASC
+        ";
+
+        $stmt = $pdo->prepare($sql);
+        $stmt->execute([$idAnuncio]);
+
+        $idsImagensFinais = $stmt->fetchAll(PDO::FETCH_COLUMN);
+
+        if(!empty($idsImagensFinais)){
+            $sql = "
+                UPDATE imagem_anuncio
+                SET
+                    ordem = ?,
+                    principal = ?
+                WHERE id_imagem = ?
+                AND id_anuncio = ?
+            ";
+
+            $stmtImagem = $pdo->prepare($sql);
+
+            foreach($idsImagensFinais as $indice => $idImagem){
+                $stmtImagem->execute([
+                    $indice + 1,
+                    $indice === 0 ? 1 : 0,
+                    $idImagem,
+                    $idAnuncio
+                ]);
+            }
+        }
+
         if($idEnderecoAntigo != $idEndereco){
             $sql = "
                 SELECT
@@ -360,6 +595,23 @@
 
         $pdo->commit();
 
+        foreach($arquivosRemoverFisico as $arquivo){
+            if(is_file($arquivo)){
+                @unlink($arquivo);
+            }
+        }
+
+        if(is_dir($pastaAnuncio)){
+            $conteudoPasta = array_diff(
+                scandir($pastaAnuncio),
+                ['.', '..']
+            );
+
+            if(empty($conteudoPasta)){
+                @rmdir($pastaAnuncio);
+            }
+        }
+
         $_SESSION['sucesso'] = 'Anúncio atualizado com sucesso.';
 
         header('Location: /UniHub/pages/anuncios/detalhes-anuncio.php?id=' . $idAnuncio);
@@ -369,6 +621,12 @@
     catch(Throwable $erro){
         if($pdo->inTransaction()){
             $pdo->rollBack();
+        }
+
+        foreach($arquivosNovosSalvos as $arquivo){
+            if(is_file($arquivo)){
+                @unlink($arquivo);
+            }
         }
 
         $_SESSION['erro'] = 'Erro ao atualizar anúncio: ' . $erro->getMessage();

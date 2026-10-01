@@ -1,6 +1,5 @@
 <?php
     if(session_status() === PHP_SESSION_NONE){
-
         session_start();
     }
 
@@ -72,6 +71,25 @@
 
     $sql = "
         SELECT
+            id_imagem,
+            caminho_arquivo,
+            ordem,
+            principal
+        FROM imagem_anuncio
+        WHERE id_anuncio = ?
+        ORDER BY
+            principal DESC,
+            ordem ASC,
+            id_imagem ASC
+    ";
+
+    $stmt = $pdo->prepare($sql);
+    $stmt->execute([$idAnuncio]);
+
+    $imagens = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    $sql = "
+        SELECT
             id_configuracao,
             usar_contrato,
             clausula_animais,
@@ -131,7 +149,7 @@
         <?php unset($_SESSION['erro']); ?>
     <?php endif; ?>
 
-    <form action="/UniHub/actions/anuncios/atualizar-anuncio.php" method="POST">
+    <form action="/UniHub/actions/anuncios/atualizar-anuncio.php" method="POST" enctype="multipart/form-data">
         <input type="hidden" name="id_anuncio" value="<?= $anuncio['id_anuncio'] ?>">
 
         <div class="card mb-4">
@@ -212,6 +230,61 @@
                     <div class="col-md-4">
                         <label for="cep" class="form-label">CEP</label>
                         <input type="text" class="form-control" id="cep" name="cep" value="<?= htmlspecialchars($anuncio['cep'] ?? '') ?>">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-4">
+            <div class="card-body">
+                <h2 class="h5 mb-2">Imagens do anúncio</h2>
+
+                <p class="text-body-secondary mb-4">
+                    Remova imagens cadastradas ou adicione novas fotos ao anúncio.
+                </p>
+
+                <?php if(!empty($imagens)): ?>
+                    <div class="row g-3 mb-4">
+                        <?php foreach($imagens as $imagem): ?>
+                            <div class="col-6 col-md-4 col-lg-3">
+                                <div class="card h-100">
+                                    <img src="/UniHub/<?= htmlspecialchars($imagem['caminho_arquivo']) ?>" class="card-img-top" style="height: 160px; object-fit: cover;" alt="Imagem do anúncio">
+
+                                    <div class="card-body p-2">
+                                        <?php if($imagem['principal']): ?>
+                                            <span class="badge text-bg-primary mb-2">
+                                                Principal
+                                            </span>
+                                        <?php endif; ?>
+
+                                        <div class="form-check">
+                                            <input type="checkbox" class="form-check-input" id="remover_imagem_<?= $imagem['id_imagem'] ?>" name="imagens_remover[]" value="<?= $imagem['id_imagem'] ?>">
+
+                                            <label class="form-check-label" for="remover_imagem_<?= $imagem['id_imagem'] ?>">
+                                                Remover imagem
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        <?php endforeach; ?>
+                    </div>
+
+                <?php else: ?>
+                    <p class="text-body-secondary mb-4">
+                        Este anúncio não possui imagens cadastradas.
+                    </p>
+                <?php endif; ?>
+
+                <div>
+                    <label for="imagens" class="form-label">
+                        Adicionar novas imagens
+                    </label>
+
+                    <input type="file" class="form-control" id="imagens" name="imagens[]" accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp" multiple>
+
+                    <div class="form-text">
+                        O anúncio pode possuir no máximo 10 imagens. Envie arquivos JPG, PNG ou WEBP de até 5 MB cada.
                     </div>
                 </div>
             </div>
