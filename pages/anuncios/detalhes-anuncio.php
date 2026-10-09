@@ -20,6 +20,7 @@
             a.titulo,
             a.descricao,
             a.valor,
+            a.estadia_minima_meses,
             a.status,
             a.data_cadastro,
             t.nome AS tipo,
@@ -213,6 +214,17 @@
                             <span class="text-body-secondary">
                                 / mês
                             </span>
+
+                            <div class="mt-2">
+                                <span class="text-body-secondary d-block">
+                                    Estadia mínima
+                                </span>
+
+                                <strong>
+                                    <?= (int) $anuncio['estadia_minima_meses'] ?>
+                                    <?= (int) $anuncio['estadia_minima_meses'] === 1 ? 'mês' : 'meses' ?>
+                                </strong>
+                            </div>
                         </div>
                     </div>
 
