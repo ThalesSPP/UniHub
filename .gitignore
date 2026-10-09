@@ -14,3 +14,7 @@ contratos/gerados/*
 # Dependências futuras
 /vendor/
 /config/email.php
+
+contratos/venv/
+contratos/temp/
+contratos/gerados/
