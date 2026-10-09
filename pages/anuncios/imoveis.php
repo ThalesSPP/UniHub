@@ -3,8 +3,17 @@
 
     $titulo = 'UniHub - Imóveis';
     $tipo = trim($_GET['tipo'] ?? '');
-    $localizacao = trim($_GET['localizacao'] ?? '');
+    $bairro = trim($_GET['bairro'] ?? '');
+    $cidade = trim($_GET['cidade'] ?? '');
+    $estado = strtoupper(trim($_GET['estado'] ?? ''));
     $valor = trim($_GET['valor'] ?? '');
+
+    $estados = [
+        'AC', 'AL', 'AP', 'AM', 'BA', 'CE', 'DF',
+        'ES', 'GO', 'MA', 'MT', 'MS', 'MG', 'PA',
+        'PB', 'PR', 'PE', 'PI', 'RJ', 'RN', 'RS',
+        'RO', 'RR', 'SC', 'SP', 'SE', 'TO'
+    ];
 
     $sqlTipos = "
         SELECT
@@ -61,18 +70,28 @@
         $parametros['tipo'] = $tipo;
     }
 
-    if($localizacao !== ''){
+    if($bairro !== ''){
         $sql .= "
-            AND (
-                e.cidade LIKE :localizacaoCidade
-                OR e.bairro LIKE :localizacaoBairro
-                OR e.logradouro LIKE :localizacaoLogradouro
-            )
+            AND e.bairro LIKE :bairro
         ";
 
-        $parametros['localizacaoCidade'] = '%' . $localizacao . '%';
-        $parametros['localizacaoBairro'] = '%' . $localizacao . '%';
-        $parametros['localizacaoLogradouro'] = '%' . $localizacao . '%';
+        $parametros['bairro'] = '%' . $bairro . '%';
+    }
+
+    if($cidade !== ''){
+        $sql .= "
+            AND e.cidade LIKE :cidade
+        ";
+
+        $parametros['cidade'] = '%' . $cidade . '%';
+    }
+
+    if($estado !== ''){
+        $sql .= "
+            AND e.estado = :estado
+        ";
+
+        $parametros['estado'] = $estado;
     }
 
     if($valor !== '' && is_numeric($valor)){
@@ -110,7 +129,8 @@
         <div class="card-body p-4">
             <form action="/UniHub/pages/anuncios/imoveis.php" method="GET">
                 <div class="row g-3">
-                    <div class="col-md-4">
+
+                    <div class="col-md-6 col-lg-2">
                         <label for="tipo" class="form-label">
                             Tipo de imóvel
                         </label>
@@ -119,24 +139,50 @@
                             <option value="">
                                 Todos os tipos
                             </option>
+
                             <?php foreach($tipos as $tipoAnuncio): ?>
                                 <option value="<?= htmlspecialchars(strtolower($tipoAnuncio['nome'])) ?>" <?= strtolower($tipo) === strtolower($tipoAnuncio['nome']) ? 'selected' : '' ?>>
                                     <?= htmlspecialchars(ucfirst(strtolower($tipoAnuncio['nome']))) ?>
                                 </option>
-
                             <?php endforeach; ?>
                         </select>
                     </div>
 
-                    <div class="col-md-4">
-                        <label for="localizacao" class="form-label">
-                            Localização
+                    <div class="col-md-6 col-lg-2">
+                        <label for="bairro" class="form-label">
+                            Bairro
                         </label>
 
-                        <input type="text" class="form-control" id="localizacao" name="localizacao" placeholder="Ex.: Centro" value="<?= htmlspecialchars($localizacao) ?>">
+                        <input type="text" class="form-control" id="bairro" name="bairro" placeholder="Ex.: Centro" value="<?= htmlspecialchars($bairro) ?>">
                     </div>
 
-                    <div class="col-md-2">
+                    <div class="col-md-6 col-lg-2">
+                        <label for="cidade" class="form-label">
+                            Cidade
+                        </label>
+
+                        <input type="text" class="form-control" id="cidade" name="cidade" placeholder="Ex.: Alegre" value="<?= htmlspecialchars($cidade) ?>">
+                    </div>
+
+                    <div class="col-md-6 col-lg-2">
+                        <label for="estado" class="form-label">
+                            Estado
+                        </label>
+
+                        <select class="form-select" id="estado" name="estado">
+                            <option value="">
+                                Todos
+                            </option>
+
+                            <?php foreach($estados as $uf): ?>
+                                <option value="<?= $uf ?>" <?= $estado === $uf ? 'selected' : '' ?>>
+                                    <?= $uf ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+
+                    <div class="col-md-6 col-lg-2">
                         <label for="valor" class="form-label">
                             Valor máximo
                         </label>
@@ -144,21 +190,23 @@
                         <input type="number" class="form-control" id="valor" name="valor" placeholder="R$" min="0" step="0.01" value="<?= htmlspecialchars($valor) ?>">
                     </div>
 
-                    <div class="col-md-2 d-flex align-items-end">
+                    <div class="col-md-6 col-lg-2 d-flex align-items-end">
                         <button type="submit" class="btn btn-primary w-100">
                             Buscar
                         </button>
                     </div>
                 </div>
 
-                <?php if($tipo !== '' || $localizacao !== '' || $valor !== ''): ?>
+                <?php if($tipo !== '' || $bairro !== '' || $cidade !== '' || $estado !== '' || $valor !== ''): ?>
                     <div class="mt-3">
                         <a href="/UniHub/pages/anuncios/imoveis.php" class="text-decoration-none">
                             Limpar filtros
                         </a>
                     </div>
                 <?php endif; ?>
+
             </form>
+
         </div>
     </div>
 

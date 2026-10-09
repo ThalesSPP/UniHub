@@ -71,6 +71,7 @@ CREATE TABLE anuncio(
     descricao TEXT NOT NULL,
 
     valor DECIMAL(10,2) NOT NULL,
+    estadia_minima_meses SMALLINT UNSIGNED NOT NULL DEFAULT 1,
 
     status ENUM(
         'ATIVO',

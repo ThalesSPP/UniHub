@@ -1,5 +1,5 @@
 <?php
-    if (session_status() === PHP_SESSION_NONE) {
+    if(session_status() === PHP_SESSION_NONE){
         session_start();
     }
 ?>
@@ -22,9 +22,7 @@
 
     <?php require __DIR__ . '/../includes/footer.php'; ?>
 
-    <button type="button" id="botaoTema" class="btn btn-outline-secondary botao-tema-flutuante" aria-label="Alternar tema">🌙</button>  
-
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"> </script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="/UniHub/assets/js/script.js"></script>
 </body>
 </html>

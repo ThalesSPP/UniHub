@@ -27,6 +27,7 @@
             a.titulo,
             a.descricao,
             a.valor,
+            a.estadia_minima_meses,
             e.logradouro,
             e.numero,
             e.complemento,
@@ -68,6 +69,13 @@
     $stmt->execute();
 
     $tipos = $stmt->fetchAll();
+
+    $estados = [
+        'AC', 'AL', 'AP', 'AM', 'BA', 'CE', 'DF',
+        'ES', 'GO', 'MA', 'MT', 'MS', 'MG', 'PA',
+        'PB', 'PR', 'PE', 'PI', 'RJ', 'RN', 'RS',
+        'RO', 'RR', 'SC', 'SP', 'SE', 'TO'
+    ];
 
     $sql = "
         SELECT
@@ -127,6 +135,7 @@
     }
 
     $usarContrato = !empty($configuracaoContrato['usar_contrato']);
+    $semNumero = strtoupper(trim($anuncio['numero'])) === 'S/N';
     $tituloPagina = 'Editar anúncio - UniHub';
 
     ob_start();
@@ -162,7 +171,7 @@
                 </div>
 
                 <div class="row g-3 mb-3">
-                    <div class="col-md-6">
+                    <div class="col-md-4">
                         <label for="id_tipo" class="form-label">Tipo de imóvel</label>
 
                         <select class="form-select" id="id_tipo" name="id_tipo" required>
@@ -174,11 +183,18 @@
                         </select>
                     </div>
 
-                    <div class="col-md-6">
+                    <div class="col-md-4">
                         <label for="valor" class="form-label">Valor do aluguel</label>
                         <input type="text" class="form-control" id="valor" name="valor" value="<?= number_format($anuncio['valor'], 2, ',', '.') ?>" required>
                     </div>
 
+                    <div class="col-md-4">
+                        <label for="estadia_minima_meses" class="form-label">
+                            Estadia mínima (meses)
+                        </label>
+
+                        <input type="number" class="form-control" id="estadia_minima_meses" name="estadia_minima_meses" min="1" step="1" value="<?= htmlspecialchars($anuncio['estadia_minima_meses']) ?>" required>
+                    </div>
                 </div>
 
                 <div>
@@ -200,8 +216,18 @@
 
                     <div class="col-md-4">
                         <label for="numero" class="form-label">Número</label>
-                        <input type="text" class="form-control" id="numero" name="numero" value="<?= htmlspecialchars($anuncio['numero']) ?>" required>
 
+                        <input type="text" class="form-control <?= $semNumero ? 'd-none' : '' ?>" id="numero" name="numero" inputmode="numeric" pattern="[0-9]+" value="<?= $semNumero ? '' : htmlspecialchars($anuncio['numero']) ?>" title="Digite apenas números" <?= $semNumero ? 'disabled' : 'required' ?>>
+
+                        <input type="text" class="form-control <?= $semNumero ? '' : 'd-none' ?>" id="numero_sem_numero" name="numero" value="S/N" readonly <?= $semNumero ? '' : 'disabled' ?>>
+
+                        <div class="form-check mt-2">
+                            <input type="checkbox" class="form-check-input" id="sem_numero" <?= $semNumero ? 'checked' : '' ?>>
+
+                            <label class="form-check-label" for="sem_numero">
+                                Imóvel sem número
+                            </label>
+                        </div>
                     </div>
 
                     <div class="col-md-6">
@@ -224,7 +250,16 @@
 
                     <div class="col-md-3">
                         <label for="estado" class="form-label">Estado</label>
-                        <input type="text" class="form-control" id="estado" name="estado" maxlength="2" value="<?= htmlspecialchars($anuncio['estado']) ?>" required>
+
+                        <select class="form-select" id="estado" name="estado" required>
+                            <option value="">Selecione</option>
+
+                            <?php foreach($estados as $uf): ?>
+                                <option value="<?= $uf ?>" <?= $anuncio['estado'] === $uf ? 'selected' : '' ?>>
+                                    <?= $uf ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
                     </div>
 
                     <div class="col-md-4">
@@ -253,12 +288,18 @@
                                     <div class="card-body p-2">
                                         <?php if($imagem['principal']): ?>
                                             <span class="badge text-bg-primary mb-2">
-                                                Principal
+                                                Capa atual
                                             </span>
                                         <?php endif; ?>
 
+                                        <input type="radio" class="btn-check" name="imagem_principal" id="imagem_principal_existente_<?= $imagem['id_imagem'] ?>" value="existente:<?= $imagem['id_imagem'] ?>" autocomplete="off" <?= $imagem['principal'] ? 'checked' : '' ?>>
+
+                                        <label class="btn btn-outline-primary btn-sm w-100 mb-2" for="imagem_principal_existente_<?= $imagem['id_imagem'] ?>">
+                                            Definir como capa
+                                        </label>
+
                                         <div class="form-check">
-                                            <input type="checkbox" class="form-check-input" id="remover_imagem_<?= $imagem['id_imagem'] ?>" name="imagens_remover[]" value="<?= $imagem['id_imagem'] ?>">
+                                            <input type="checkbox" class="form-check-input remover-imagem" id="remover_imagem_<?= $imagem['id_imagem'] ?>" name="imagens_remover[]" value="<?= $imagem['id_imagem'] ?>" data-radio-capa="imagem_principal_existente_<?= $imagem['id_imagem'] ?>">
 
                                             <label class="form-check-label" for="remover_imagem_<?= $imagem['id_imagem'] ?>">
                                                 Remover imagem
@@ -286,6 +327,8 @@
                     <div class="form-text">
                         O anúncio pode possuir no máximo 10 imagens. Envie arquivos JPG, PNG ou WEBP de até 5 MB cada.
                     </div>
+
+                    <div class="row g-3 mt-1" id="preview_imagens"></div>
                 </div>
             </div>
         </div>
@@ -380,12 +423,18 @@
 
                     <div id="clausulas_extras">
                         <?php foreach($clausulasExtras as $clausula): ?>
-                            <div class="d-flex gap-2 mb-3 clausula-extra">
+                            <div class="d-flex flex-column flex-sm-row gap-2 mb-3 clausula-extra">
                                 <textarea class="form-control" name="clausulas_extras[]" rows="3" readonly><?= htmlspecialchars($clausula) ?></textarea>
 
-                                <button type="button" class="btn btn-outline-danger excluir-clausula">
-                                    Excluir
-                                </button>
+                                <div class="d-flex flex-sm-column gap-2">
+                                    <button type="button" class="btn btn-outline-primary editar-clausula">
+                                        Editar
+                                    </button>
+
+                                    <button type="button" class="btn btn-outline-danger excluir-clausula">
+                                        Excluir
+                                    </button>
+                                </div>
                             </div>
                         <?php endforeach; ?>
                     </div>
@@ -419,6 +468,108 @@
     const adicionarClausula = document.getElementById('adicionar_clausula');
     const clausulasExtras = document.getElementById('clausulas_extras');
     const novaClausula = document.getElementById('nova_clausula');
+    const numero = document.getElementById('numero');
+    const numeroSemNumero = document.getElementById('numero_sem_numero');
+    const semNumero = document.getElementById('sem_numero');
+    const imagens = document.getElementById('imagens');
+    const previewImagens = document.getElementById('preview_imagens');
+
+    function atualizarNumero(){
+        if(semNumero.checked){
+            numero.value = '';
+            numero.classList.add('d-none');
+            numero.disabled = true;
+            numero.required = false;
+
+            numeroSemNumero.classList.remove('d-none');
+            numeroSemNumero.disabled = false;
+        }
+
+        else{
+            numero.classList.remove('d-none');
+            numero.disabled = false;
+            numero.required = true;
+
+            numeroSemNumero.classList.add('d-none');
+            numeroSemNumero.disabled = true;
+        }
+    }
+
+    numero.addEventListener('input', function(){
+        numero.value = numero.value.replace(/\D/g, '');
+    });
+
+    semNumero.addEventListener('change', atualizarNumero);
+    atualizarNumero();
+
+    document.querySelectorAll('.remover-imagem').forEach(function(checkbox){
+        checkbox.addEventListener('change', function(){
+            const radio = document.getElementById(checkbox.dataset.radioCapa);
+
+            if(radio){
+                radio.disabled = checkbox.checked;
+
+                if(checkbox.checked && radio.checked){
+                    radio.checked = false;
+
+                    const primeiraCapa = document.querySelector('input[name="imagem_principal"]:not(:disabled)');
+
+                    if(primeiraCapa){
+                        primeiraCapa.checked = true;
+                    }
+                }
+            }
+        });
+    });
+
+    imagens.addEventListener('change', function(){
+        previewImagens.innerHTML = '';
+
+        const arquivos = Array.from(imagens.files);
+        const capaSelecionada = document.querySelector('input[name="imagem_principal"]:checked');
+
+        arquivos.forEach(function(arquivo, indice){
+            const coluna = document.createElement('div');
+            coluna.className = 'col-6 col-md-4 col-lg-3';
+
+            const card = document.createElement('div');
+            card.className = 'card h-100';
+
+            const imagem = document.createElement('img');
+            imagem.className = 'card-img-top';
+            imagem.style.height = '160px';
+            imagem.style.objectFit = 'cover';
+            imagem.alt = 'Pré-visualização da nova imagem';
+            imagem.src = URL.createObjectURL(arquivo);
+
+            const cardBody = document.createElement('div');
+            cardBody.className = 'card-body p-2';
+
+            const radio = document.createElement('input');
+            radio.type = 'radio';
+            radio.className = 'btn-check';
+            radio.name = 'imagem_principal';
+            radio.id = 'imagem_principal_nova_' + indice;
+            radio.value = 'nova:' + indice;
+            radio.autocomplete = 'off';
+
+            if(!capaSelecionada && indice === 0){
+                radio.checked = true;
+            }
+
+            const label = document.createElement('label');
+            label.className = 'btn btn-outline-primary btn-sm w-100';
+            label.htmlFor = radio.id;
+            label.textContent = 'Definir como capa';
+
+            cardBody.appendChild(radio);
+            cardBody.appendChild(label);
+            card.appendChild(imagem);
+            card.appendChild(cardBody);
+            coluna.appendChild(card);
+            previewImagens.appendChild(coluna);
+        });
+    });
 
     function atualizarContrato(){
         if(usarContrato.checked){
@@ -441,7 +592,7 @@
         }
 
         const campo = document.createElement('div');
-        campo.className = 'd-flex gap-2 mb-3 clausula-extra';
+        campo.className = 'd-flex flex-column flex-sm-row gap-2 mb-3 clausula-extra';
 
         const textarea = document.createElement('textarea');
         textarea.className = 'form-control';
@@ -450,13 +601,24 @@
         textarea.readOnly = true;
         textarea.value = texto;
 
+        const acoes = document.createElement('div');
+        acoes.className = 'd-flex flex-sm-column gap-2';
+
+        const botaoEditar = document.createElement('button');
+        botaoEditar.type = 'button';
+        botaoEditar.className = 'btn btn-outline-primary editar-clausula';
+        botaoEditar.textContent = 'Editar';
+
         const botaoExcluir = document.createElement('button');
         botaoExcluir.type = 'button';
         botaoExcluir.className = 'btn btn-outline-danger excluir-clausula';
         botaoExcluir.textContent = 'Excluir';
 
+        acoes.appendChild(botaoEditar);
+        acoes.appendChild(botaoExcluir);
+
         campo.appendChild(textarea);
-        campo.appendChild(botaoExcluir);
+        campo.appendChild(acoes);
 
         clausulasExtras.appendChild(campo);
 
@@ -465,9 +627,28 @@
     });
 
     clausulasExtras.addEventListener('click', function(evento){
+        if(evento.target.classList.contains('editar-clausula')){
+            const campo = evento.target.closest('.clausula-extra');
+            const textarea = campo.querySelector('textarea');
+
+            textarea.readOnly = !textarea.readOnly;
+
+            if(textarea.readOnly){
+                evento.target.textContent = 'Editar';
+                evento.target.classList.remove('btn-primary');
+                evento.target.classList.add('btn-outline-primary');
+            }
+
+            else{
+                evento.target.textContent = 'Concluir';
+                evento.target.classList.remove('btn-outline-primary');
+                evento.target.classList.add('btn-primary');
+                textarea.focus();
+            }
+        }
+
         if(evento.target.classList.contains('excluir-clausula')){
             evento.target.closest('.clausula-extra').remove();
-
         }
     });
 </script>

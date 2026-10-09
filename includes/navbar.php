@@ -10,7 +10,11 @@
         </a>
 
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarUniHub" aria-controls="navbarUniHub" aria-expanded="false" aria-label="Abrir navegação">
-            <span class="navbar-toggler-icon"></span>
+            <span class="icone-menu" aria-hidden="true">
+                <span></span>
+                <span></span>
+                <span></span>
+            </span>
         </button>
 
         <div class="collapse navbar-collapse" id="navbarUniHub">
@@ -59,6 +63,19 @@
                         </a>
                     </li>
                 <?php endif; ?>
+
+                <li class="nav-item ms-lg-2 mt-2 mt-lg-0">
+                    <button
+                        type="button"
+                        class="btn botao-tema-navbar"
+                        id="botaoTema"
+                        aria-label="Ativar modo escuro"
+                        title="Ativar modo escuro"
+                    >
+                        <span id="iconeTema" aria-hidden="true">🌙</span>
+                        <span class="d-lg-none ms-2">Alternar tema</span>
+                    </button>
+                </li>
             </ul>
         </div>
     </div>

@@ -1,32 +1,44 @@
 const botaoTema = document.getElementById('botaoTema');
+const iconeTema = document.getElementById('iconeTema');
 const html = document.documentElement;
 
 const temaSalvo = localStorage.getItem('tema');
+const temaInicial = temaSalvo || html.getAttribute('data-bs-theme') || 'light';
 
-if (temaSalvo) {
-    html.setAttribute('data-bs-theme', temaSalvo);
+html.setAttribute('data-bs-theme', temaInicial);
 
-    if (botaoTema) {
-        botaoTema.textContent = temaSalvo === 'dark' ? '☀️' : '🌙';
+function atualizarBotaoTema(tema){
+    if(!botaoTema){
+        return;
     }
+
+    const modoEscuro = tema === 'dark';
+
+    if(iconeTema){
+        iconeTema.textContent = modoEscuro ? '☀️' : '🌙';
+    }
+
+    const descricao = modoEscuro
+        ? 'Ativar modo claro'
+        : 'Ativar modo escuro';
+
+    botaoTema.setAttribute('aria-label', descricao);
+    botaoTema.setAttribute('title', descricao);
 }
 
-if (botaoTema) {
-    botaoTema.addEventListener('click', () => {
+atualizarBotaoTema(temaInicial);
+
+if(botaoTema){
+    botaoTema.addEventListener('click', function(){
         const temaAtual = html.getAttribute('data-bs-theme');
 
-        const novoTema =
-            temaAtual === 'dark'
-                ? 'light'
-                : 'dark';
+        const novoTema = temaAtual === 'dark'
+            ? 'light'
+            : 'dark';
 
         html.setAttribute('data-bs-theme', novoTema);
-
         localStorage.setItem('tema', novoTema);
 
-        botaoTema.textContent =
-            novoTema === 'dark'
-                ? '☀️'
-                : '🌙';
+        atualizarBotaoTema(novoTema);
     });
 }

@@ -2,6 +2,13 @@
     require_once __DIR__ . '/config/database.php';
     $titulo = "UniHub - Início";
 
+    $estados = [
+        'AC', 'AL', 'AP', 'AM', 'BA', 'CE', 'DF',
+        'ES', 'GO', 'MA', 'MT', 'MS', 'MG', 'PA',
+        'PB', 'PR', 'PE', 'PI', 'RJ', 'RN', 'RS',
+        'RO', 'RR', 'SC', 'SP', 'SE', 'TO'
+    ];
+
     $sql = "
         SELECT
             a.id_anuncio,
@@ -41,7 +48,6 @@
     <div class="container py-5">
         <div class="row py-lg-5">
             <div class="col-12">
-
                 <h1 class="display-4 fw-bold mb-3">
                     Encontre a moradia ideal para sua vida acadêmica
                 </h1>
@@ -69,80 +75,71 @@
 <section class="container">
     <div class="card border-0 shadow-sm busca-home">
         <div class="card-body p-4">
-
             <form action="/UniHub/pages/anuncios/imoveis.php" method="GET">
                 <div class="row g-3">
-                    <div class="col-md-4">
-                        <label class="form-label">
+                    <div class="col-md-6 col-lg-2">
+                        <label for="tipo" class="form-label">
                             Tipo de imóvel
                         </label>
-                        <select name="tipo" class="form-select">
-                            <option value="">
-                                Todos os tipos
-                            </option>
 
-                            <option value="apartamento">
-                                Apartamento
-                            </option>
-
-                            <option value="casa">
-                                Casa
-                            </option>
-
-                            <option value="kitnet">
-                                Kitnet
-                            </option>
-
-                            <option value="quarto">
-                                Quarto
-                            </option>
-
-                            <option value="republica">
-                                República
-                            </option>
-
-                            <option value="outro">
-                                Outro
-                            </option>
+                        <select name="tipo" id="tipo" class="form-select">
+                            <option value="">Todos os tipos</option>
+                            <option value="apartamento">Apartamento</option>
+                            <option value="casa">Casa</option>
+                            <option value="kitnet">Kitnet</option>
+                            <option value="quarto">Quarto</option>
+                            <option value="republica">República</option>
+                            <option value="outro">Outro</option>
                         </select>
                     </div>
-                    <div class="col-md-4">
-                        <label class="form-label">
-                            Localização
-                        </label>
-                        <input
-                            type="text"
-                            name="localizacao"
-                            class="form-control"
-                            placeholder="Ex.: Centro">
 
+                    <div class="col-md-6 col-lg-2">
+                        <label for="bairro" class="form-label">
+                            Bairro
+                        </label>
+
+                        <input type="text" name="bairro" id="bairro" class="form-control" placeholder="Ex.: Centro">
                     </div>
 
+                    <div class="col-md-6 col-lg-2">
+                        <label for="cidade" class="form-label">
+                            Cidade
+                        </label>
 
-                    <div class="col-md-2">
+                        <input type="text" name="cidade" id="cidade" class="form-control" placeholder="Ex.: Alegre">
+                    </div>
 
-                        <label class="form-label">
+                    <div class="col-md-6 col-lg-2">
+                        <label for="estado" class="form-label">
+                            Estado
+                        </label>
+
+                        <select name="estado" id="estado" class="form-select">
+                            <option value="">Todos</option>
+
+                            <?php foreach($estados as $uf): ?>
+                                <option value="<?= $uf ?>">
+                                    <?= $uf ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+
+                    <div class="col-md-6 col-lg-2">
+                        <label for="valor" class="form-label">
                             Valor máximo
                         </label>
 
-                        <input
-                            type="number"
-                            name="valor"
-                            class="form-control"
-                            placeholder="R$">
-
+                        <input type="number" name="valor" id="valor" class="form-control" placeholder="R$" min="0" step="0.01">
                     </div>
-                    <div class="col-md-2 d-flex align-items-end">
 
-                        <button
-                            type="submit"
-                            class="btn btn-primary w-100">
+                    <div class="col-md-6 col-lg-2 d-flex align-items-end">
+                        <button type="submit" class="btn btn-primary w-100">
                             Buscar
                         </button>
                     </div>
                 </div>
             </form>
-
         </div>
     </div>
 </section>
@@ -162,14 +159,12 @@
         <a href="/UniHub/pages/anuncios/imoveis.php" class="text-decoration-none">
             Ver todos
         </a>
-
     </div>
 
     <div class="row g-4">
         <?php if(!empty($anuncios)): ?>
             <?php foreach($anuncios as $anuncio): ?>
                 <div class="col-md-6 col-lg-4">
-
                     <div class="card h-100 border-0 shadow-sm">
                         <?php if(!empty($anuncio['imagem'])): ?>
                             <img src="/UniHub/<?= htmlspecialchars($anuncio['imagem']) ?>" class="card-img-top" style="height: 220px; object-fit: cover;" alt="<?= htmlspecialchars($anuncio['titulo']) ?>">

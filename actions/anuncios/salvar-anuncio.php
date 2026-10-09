@@ -18,12 +18,8 @@
     $idUsuario = $_SESSION['id_usuario'];
     $titulo = trim($_POST['titulo'] ?? '');
     $idTipo = $_POST['id_tipo'] ?? '';
-    $valor = trim($_POST['valor'] ?? '');
-    if(str_contains($valor, ',')){
-        $valor = str_replace('.', '', $valor);
-        $valor = str_replace(',', '.', $valor);
-    }
-    
+    $valor = $_POST['valor'] ?? '';
+    $estadiaMinimaMeses = trim($_POST['estadia_minima_meses'] ?? '');
     $descricao = trim($_POST['descricao'] ?? '');
     $logradouro = trim($_POST['logradouro'] ?? '');
     $numero = trim($_POST['numero'] ?? '');
@@ -32,6 +28,7 @@
     $cidade = trim($_POST['cidade'] ?? '');
     $estado = strtoupper(trim($_POST['estado'] ?? ''));
     $cep = trim($_POST['cep'] ?? '');
+    $imagemPrincipal = trim($_POST['imagem_principal'] ?? '');
 
     $usarContrato = isset($_POST['usar_contrato']) ? 1 : 0;
     $clausulaAnimais = isset($_POST['clausula_animais']) ? 1 : 0;
@@ -53,6 +50,7 @@
         'titulo' => $titulo,
         'id_tipo' => $idTipo,
         'valor' => $valor,
+        'estadia_minima_meses' => $estadiaMinimaMeses,
         'descricao' => $descricao,
         'logradouro' => $logradouro,
         'numero' => $numero,
@@ -72,7 +70,7 @@
         'clausulas_extras' => $clausulasExtras
     ];
 
-    if($titulo === '' || $idTipo === '' || $valor === '' || $descricao === '' || $logradouro === '' || $numero === '' || $bairro === '' || $cidade === '' || $estado === ''){
+    if($titulo === '' || $idTipo === '' || $valor === '' || $estadiaMinimaMeses === '' || $descricao === '' || $logradouro === '' || $numero === '' || $bairro === '' || $cidade === '' || $estado === ''){
         $_SESSION['erro'] = 'Preencha todos os campos obrigatórios.';
 
         header('Location: /UniHub/pages/anuncios/novo-anuncio.php');
@@ -85,6 +83,15 @@
         header('Location: /UniHub/pages/anuncios/novo-anuncio.php');
         exit;
     }
+
+    if(!ctype_digit($estadiaMinimaMeses) || (int) $estadiaMinimaMeses < 1){
+        $_SESSION['erro'] = 'Informe uma estadia mínima válida, em meses.';
+
+        header('Location: /UniHub/pages/anuncios/novo-anuncio.php');
+        exit;
+    }
+
+    $estadiaMinimaMeses = (int) $estadiaMinimaMeses;
 
     $sql = "
         SELECT id_tipo
@@ -117,6 +124,7 @@
 
         $stmt = $pdo->prepare($sql);
         $stmt->execute();
+
         $modeloContrato = $stmt->fetch();
 
         if(!$modeloContrato){
@@ -125,6 +133,7 @@
             header('Location: /UniHub/pages/anuncios/novo-anuncio.php');
             exit;
         }
+
         $idModelo = $modeloContrato['id_modelo'];
     }
 
@@ -156,10 +165,9 @@
 
         foreach($_FILES['imagens']['name'] as $indice => $nomeOriginal){
             $erroUpload = $_FILES['imagens']['error'][$indice];
-            
+
             if($erroUpload === UPLOAD_ERR_NO_FILE){
                 continue;
-
             }
 
             if($erroUpload !== UPLOAD_ERR_OK){
@@ -196,10 +204,27 @@
             }
 
             $imagens[] = [
+                'indice' => $indice,
                 'temporario' => $arquivoTemporario,
                 'extensao' => $tiposPermitidos[$tipoMime]
             ];
         }
+    }
+
+    $indiceImagemPrincipal = null;
+
+    if(preg_match('/^nova:(\d+)$/', $imagemPrincipal, $resultado)){
+        $indiceImagemPrincipal = (int) $resultado[1];
+    }
+
+    $indicesImagens = array_map(function($imagem){
+        return (int) $imagem['indice'];
+    }, $imagens);
+
+    if($indiceImagemPrincipal === null || !in_array($indiceImagemPrincipal, $indicesImagens, true)){
+        $indiceImagemPrincipal = !empty($imagens)
+            ? (int) $imagens[0]['indice']
+            : null;
     }
 
     $arquivosSalvos = [];
@@ -207,6 +232,7 @@
 
     try{
         $pdo->beginTransaction();
+
         $sql = "
             SELECT id_endereco
             FROM endereco
@@ -221,6 +247,7 @@
         ";
 
         $stmt = $pdo->prepare($sql);
+
         $stmt->execute([
             $logradouro,
             $numero,
@@ -273,9 +300,10 @@
                 titulo,
                 descricao,
                 valor,
+                estadia_minima_meses,
                 status
             )
-            VALUES (?, ?, ?, ?, ?, ?, 'ATIVO')
+            VALUES (?, ?, ?, ?, ?, ?, ?, 'ATIVO')
         ";
 
         $stmt = $pdo->prepare($sql);
@@ -285,7 +313,8 @@
             $idEndereco,
             $titulo,
             $descricao,
-            $valor
+            $valor,
+            $estadiaMinimaMeses
         ]);
 
         $idAnuncio = $pdo->lastInsertId();
@@ -323,7 +352,8 @@
 
                 $caminhoBanco = 'uploads/anuncios/' . $idAnuncio . '/' . $nomeArquivo;
                 $ordem = $indice + 1;
-                $principal = $indice === 0 ? 1 : 0;
+                $principal = (int) $imagem['indice'] === $indiceImagemPrincipal ? 1 : 0;
+
                 $stmtImagem->execute([
                     $idAnuncio,
                     $caminhoBanco,
@@ -383,7 +413,6 @@
                         $idConfiguracao,
                         $clausula,
                         $indice + 1
-
                     ]);
                 }
             }
@@ -400,7 +429,6 @@
     
     catch(Throwable $erro){
         if($pdo->inTransaction()){
-
             $pdo->rollBack();
         }
 

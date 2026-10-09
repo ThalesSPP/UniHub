@@ -20,6 +20,7 @@
     $titulo = trim($_POST['titulo'] ?? '');
     $idTipo = $_POST['id_tipo'] ?? '';
     $valor = trim($_POST['valor'] ?? '');
+    $estadiaMinimaMeses = trim($_POST['estadia_minima_meses'] ?? '');
     $descricao = trim($_POST['descricao'] ?? '');
     $logradouro = trim($_POST['logradouro'] ?? '');
     $numero = trim($_POST['numero'] ?? '');
@@ -28,6 +29,7 @@
     $cidade = trim($_POST['cidade'] ?? '');
     $estado = strtoupper(trim($_POST['estado'] ?? ''));
     $cep = trim($_POST['cep'] ?? '');
+    $imagemPrincipal = trim($_POST['imagem_principal'] ?? '');
 
     if(str_contains($valor, ',')){
         $valor = str_replace('.', '', $valor);
@@ -67,7 +69,7 @@
         exit;
     }
 
-    if($titulo === '' || $idTipo === '' || $valor === '' || $descricao === '' || $logradouro === '' || $numero === '' || $bairro === '' || $cidade === '' || $estado === ''){
+    if($titulo === '' || $idTipo === '' || $valor === '' || $estadiaMinimaMeses === '' || $descricao === '' || $logradouro === '' || $numero === '' || $bairro === '' || $cidade === '' || $estado === ''){
         $_SESSION['erro'] = 'Preencha todos os campos obrigatórios.';
 
         header('Location: /UniHub/pages/anuncios/editar-anuncio.php?id=' . $idAnuncio);
@@ -80,6 +82,15 @@
         header('Location: /UniHub/pages/anuncios/editar-anuncio.php?id=' . $idAnuncio);
         exit;
     }
+
+    if(!ctype_digit($estadiaMinimaMeses) || (int) $estadiaMinimaMeses < 1){
+        $_SESSION['erro'] = 'Informe uma estadia mínima válida, em meses.';
+
+        header('Location: /UniHub/pages/anuncios/editar-anuncio.php?id=' . $idAnuncio);
+        exit;
+    }
+
+    $estadiaMinimaMeses = (int) $estadiaMinimaMeses;
 
     $sql = "
         SELECT
@@ -143,6 +154,14 @@
     $imagensAtuais = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
     $idsImagensAtuais = array_map('intval', array_column($imagensAtuais, 'id_imagem'));
+    $idImagemPrincipalAtual = null;
+
+    foreach($imagensAtuais as $imagem){
+        if(!empty($imagem['principal'])){
+            $idImagemPrincipalAtual = (int) $imagem['id_imagem'];
+            break;
+        }
+    }
 
     foreach($imagensRemover as $idImagem){
         if(!in_array($idImagem, $idsImagensAtuais, true)){
@@ -205,10 +224,19 @@
             }
 
             $novasImagens[] = [
+                'indice' => $indice,
                 'temporario' => $arquivoTemporario,
                 'extensao' => $tiposPermitidos[$tipoMime]
             ];
         }
+    }
+
+    $tipoImagemPrincipal = null;
+    $valorImagemPrincipal = null;
+
+    if(preg_match('/^(existente|nova):(\d+)$/', $imagemPrincipal, $resultado)){
+        $tipoImagemPrincipal = $resultado[1];
+        $valorImagemPrincipal = (int) $resultado[2];
     }
 
     $quantidadeFinalImagens =
@@ -225,6 +253,7 @@
 
     $arquivosNovosSalvos = [];
     $arquivosRemoverFisico = [];
+    $idsNovasImagens = [];
     $pastaAnuncio = __DIR__ . '/../../uploads/anuncios/' . $idAnuncio;
 
     try{
@@ -296,7 +325,8 @@
                 id_endereco = ?,
                 titulo = ?,
                 descricao = ?,
-                valor = ?
+                valor = ?,
+                estadia_minima_meses = ?
             WHERE id_anuncio = ?
             AND id_usuario = ?
         ";
@@ -308,6 +338,7 @@
             $titulo,
             $descricao,
             $valor,
+            $estadiaMinimaMeses,
             $idAnuncio,
             $idUsuario
         ]);
@@ -528,6 +559,8 @@
                     $caminhoBanco,
                     $proximaOrdem
                 ]);
+
+                $idsNovasImagens[(int) $imagem['indice']] = (int) $pdo->lastInsertId();
             }
         }
 
@@ -537,7 +570,6 @@
             FROM imagem_anuncio
             WHERE id_anuncio = ?
             ORDER BY
-                principal DESC,
                 ordem ASC,
                 id_imagem ASC
         ";
@@ -545,7 +577,28 @@
         $stmt = $pdo->prepare($sql);
         $stmt->execute([$idAnuncio]);
 
-        $idsImagensFinais = $stmt->fetchAll(PDO::FETCH_COLUMN);
+        $idsImagensFinais = array_map(
+            'intval',
+            $stmt->fetchAll(PDO::FETCH_COLUMN)
+        );
+
+        $idImagemPrincipal = null;
+
+        if($tipoImagemPrincipal === 'existente' && in_array($valorImagemPrincipal, $idsImagensFinais, true)){
+            $idImagemPrincipal = $valorImagemPrincipal;
+        }
+
+        elseif($tipoImagemPrincipal === 'nova' && isset($idsNovasImagens[$valorImagemPrincipal]) && in_array($idsNovasImagens[$valorImagemPrincipal], $idsImagensFinais, true)){
+            $idImagemPrincipal = $idsNovasImagens[$valorImagemPrincipal];
+        }
+
+        elseif($idImagemPrincipalAtual !== null && in_array($idImagemPrincipalAtual, $idsImagensFinais, true)){
+            $idImagemPrincipal = $idImagemPrincipalAtual;
+        }
+
+        elseif(!empty($idsImagensFinais)){
+            $idImagemPrincipal = $idsImagensFinais[0];
+        }
 
         if(!empty($idsImagensFinais)){
             $sql = "
@@ -562,7 +615,7 @@
             foreach($idsImagensFinais as $indice => $idImagem){
                 $stmtImagem->execute([
                     $indice + 1,
-                    $indice === 0 ? 1 : 0,
+                    $idImagem === $idImagemPrincipal ? 1 : 0,
                     $idImagem,
                     $idAnuncio
                 ]);
