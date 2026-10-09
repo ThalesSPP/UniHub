@@ -38,6 +38,14 @@
                         </a>
                     </li>
 
+                    <?php if(($_SESSION['perfil'] ?? '') === 'ADMINISTRADOR'): ?>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/UniHub/pages/admin/painel.php">
+                                Painel Admin
+                            </a>
+                        </li>
+                    <?php endif; ?>
+
                     <li class="nav-item ms-lg-2">
                         <a class="btn btn-primary" href="/UniHub/pages/anuncios/novo-anuncio.php">
                             Anunciar imóvel
