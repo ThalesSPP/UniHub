@@ -7,7 +7,7 @@
                 </span>
 
                 <p class="text-secondary mb-0">
-                    Moradias para estudantes do IFES Campus de Alegre.
+                    Moradias para estudantes, em um só lugar.
                 </p>
             </div>
 

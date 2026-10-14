@@ -55,7 +55,7 @@
                 <p class="lead text-secondary mb-4">
                     O UniHub conecta estudantes a opções de moradia de forma simples e prática.
                     Encontre casas, apartamentos, kitnets, quartos e repúblicas voltadas ao
-                    público estudantil do IFES Campus de Alegre.
+                    público estudantil.
                 </p>
 
                 <p class="text-body-secondary mb-4">

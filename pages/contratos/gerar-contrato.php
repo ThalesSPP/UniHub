@@ -630,6 +630,8 @@
     $arquivoRelativo = 'contratos/gerados/' . $idAnuncio . '/' . $nomeArquivo;
 
     try{
+        $pdo->beginTransaction();
+
         $sql = "
             INSERT INTO contrato_gerado (
                 id_configuracao,
@@ -644,16 +646,38 @@
             $anuncio['id_configuracao'],
             $arquivoRelativo
         ]);
+
+        $sql = "
+            UPDATE anuncio
+            SET status = 'INATIVO'
+            WHERE id_anuncio = ?
+            AND id_usuario = ?
+            AND status != 'REMOVIDO'
+        ";
+
+        $stmt = $pdo->prepare($sql);
+        $stmt->execute([
+            $idAnuncio,
+            $idUsuario
+        ]);
+
+        $pdo->commit();
     }
     catch(Exception $e){
+        if($pdo->inTransaction()){
+            $pdo->rollBack();
+        }
+
         if(is_file($caminhoSaida)){
             unlink($caminhoSaida);
         }
 
-        voltarComErro('O contrato foi gerado, mas não foi possível registrar a emissão no sistema.');
+        voltarComErro(
+            'O contrato foi gerado, mas não foi possível registrar a emissão e desativar o anúncio.'
+        );
     }
 
-    $_SESSION['sucesso'] = 'Contrato gerado com sucesso.';
+    $_SESSION['sucesso'] = 'Contrato gerado com sucesso. O anúncio foi desativado automaticamente.';
     $_SESSION['contrato_gerado_url'] = '/UniHub/' . str_replace(
         DIRECTORY_SEPARATOR,
         '/',
